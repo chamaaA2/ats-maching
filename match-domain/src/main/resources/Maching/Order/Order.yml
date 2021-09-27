@@ -1,94 +1,149 @@
-name: AvidiaCBAccountTransfer
-displayName: Avidia Bank Transfers
-entityTags:
-  - Avidia
-entityDescription: Avidia bank transfers
-rootEntity: AvidiaCB
-idFields: 
-  - transferId
+name: Order
+rootEntity: Instrument
+displayName: Order
+entityDescription: Order
+idFields:
+  - orderId
 fields:
-  - avidiaCBId
-  - transferId
-  - eventCheckPoint
-  - accountId
-  - fromAccount
-  - toAccount
-  - transferAmount
-  - bankTransferStatus
-activeWhen: daysPassed(entity._lastUpdatedTime) <= 5
+  - orderId
+  - symbol
+  - orderQty
+  - side
+  - orderType
+  - orderStatus
+  - cumulativeQty
+  - orderTime
+  - userId
+  - tif
+  - displayQty
+  - minimumQty
+  - price
+  - expireDate
+activeWhen: entity.orderStatus == NEW or entity.orderStatus == PFIL
 events:
-  AvidiaCBAccountTransferRequested:
+  OrderAccepted:
     phase: INITIALIZE
     fields:
-      - avidiaCBId
-      - transferId
-      - eventCheckPoint
-      - accountId
-      - fromAccount
-      - toAccount
-      - transferAmount
-      - bankTransferStatus
+      - orderId
+      - symbol
+      - orderQty
+      - side
+      - orderType
+      - orderAcceptedTime
+      - userId
+      - tif
+      - displayQty
+      - minimumQty
+      - price
+      - expireDate
     onApply:
-      - entity.eventCheckPoint = event.eventCheckPoint
-      - entity.accountId = event.accountId
-      - entity.fromAccount = event.fromAccount
-      - entity.toAccount = event.toAccount
-      - entity.transferAmount = event.transferAmount
-      - entity.bankTransferStatus = PENDING
-  AvidiaCBAccountTransferSkipped:
+      - entity.orderQty = event.orderQty
+      - entity.side = event.side
+      - entity.orderType = event.orderType
+      - entity.orderStatus = NEW
+      - entity.cumulativeQty = 0
+      - entity.orderTime = event.orderAcceptedTime
+      - entity.userId = event.userId
+      - entity.tif = event.tif
+      - entity.displayQty = event.displayQty
+      - entity.minimumQty = event.minimumQty
+      - entity.price = event.price
+      - entity.expireDate = event.expireDate
+  OrderRejected:
     phase: INITIALIZE
     fields:
-      - avidiaCBId
-      - transferId
-      - eventCheckPoint
-      - accountId
-      - fromAccount
-      - toAccount
-      - transferAmount
-      - bankTransferStatus
+      - orderId
+      - symbol
+      - orderQty
+      - side
+      - orderType
+      - orderRejectedTime
+      - userId
+      - tif
+      - displayQty
+      - minimumQty
+      - price
+      - expireDate
+      - orderRejectedReason
     onApply:
-      - entity.eventCheckPoint = event.eventCheckPoint
-      - entity.accountId = event.accountId
-      - entity.fromAccount = event.fromAccount
-      - entity.toAccount = event.toAccount
-      - entity.transferAmount = event.transferAmount
-      - entity.bankTransferStatus = SKIPPED    
-  AvidiaCBCPAccountTransferResponse:
+      - entity.orderQty = event.orderQty
+      - entity.side = event.side
+      - entity.orderType = event.orderType
+      - entity.orderStatus = REJ
+      - entity.cumulativeQty = 0
+      - entity.orderTime = event.orderRejectedTime
+      - entity.userId = event.userId
+      - entity.tif = event.tif
+      - entity.displayQty = event.displayQty
+      - entity.minimumQty = event.minimumQty
+      - entity.price = event.price
+      - entity.expireDate = event.expireDate
+  OrderPfilled:
+    phase: INTERMEDIATE
+    fields:
+      - orderId
+      - symbol
+      - orderQty
+      - lastQty
+      - lastPrice
+    onApply:
+      - entity.orderStatus = PFIL
+      - entity.cumulativeQty += event.lastQty
+  OrderFilled:
+    phase: INTERMEDIATE
+    fields:
+      - orderId
+      - symbol
+      - orderQty
+      - lastQty
+      - lastPrice
+    onApply:
+      - entity.orderStatus = FIL
+      - entity.cumulativeQty += event.lastQty
+  OrderExpired:
+    phase: INTERMEDIATE
+    fields:
+      - orderId
+      - symbol
+      - orderExpiredReason
+      - orderExpiredTime
+    onApply:
+      - entity.orderStatus = EXP
+  OrderCancelled:
+    phase: INTERMEDIATE
+    fields:
+      - orderId
+      - symbol
+      - orderCancelledReason
+      - orderCancelledTime
+    onApply:
+      - entity.orderStatus = CNC
+  OrderRepriced:
+    phase: INTERMEDIATE
+    fields:
+      - orderId
+      - symbol
+      - lastPrice
+      - orderRepricedTime
+    onApply:
+      - entity.price = event.lastPrice
+commands: # No need add commands to Entity level becuase of we don't use entityId in command
+  PlaceOrderRequest:
     phase: INITIALIZE
     fields:
-      - avidiaCBId
-      - transferId
-      - eventCheckPoint
-      - accountId
-      - fromAccount
-      - toAccount
-      - transferAmount
+      - symbol
+      - orderQty
+      - side
+      - orderType
+      - userId
+      - tif
+      - displayQty
+      - minimumQty
+      - price
+      - expireDate
+  CancelOrderRequest:
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - orderId
       - comment
-      - bankTransferStatus
-    onApply:
-      - entity.bankTransferStatus = event.bankTransferStatus
-  AvidiaCBSLDAccountTransferResponse:
-    phase: INITIALIZE
-    fields:
-      - avidiaCBId
-      - transferId
-      - eventCheckPoint
-      - accountId
-      - fromAccount
-      - toAccount
-      - amount
-      - comment
-      - bankTransferStatus
-      - responseTimestamp
-    onApply:
-      - entity.bankTransferStatus = event.bankTransferStatus
-commands:
-  AvidiaCBAccountTransferRequest:
-    phase: INITIALIZE
-    fields:
-      - avidiaCBId
-      - accountId
-      - fromAccount
-      - toAccount
-      - transferAmount
-      - txRef

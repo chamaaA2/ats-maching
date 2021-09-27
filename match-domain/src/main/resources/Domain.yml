@@ -64,6 +64,7 @@ fields:
   price: BigDecimal
   expireDate: Timestamp
   orderRejectedTime: Timestamp
+  orderAcceptedTime: Timestamp
   orderRejectedReason: String
   lastQty: int
   lastPrice: BigDecimal

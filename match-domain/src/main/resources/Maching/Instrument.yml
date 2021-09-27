@@ -27,9 +27,9 @@ events:
     onApply:
       - entity.symbolHalted = false
 commands:
-  InstrumentCreateRequest :# is phase required in command
-  fields:
-    - symbol
+  InstrumentCreateRequest :
+    fields:
+      - symbol
   InstrumentHaltRequest :
     phase: INTERMEDIATE
     fields:
