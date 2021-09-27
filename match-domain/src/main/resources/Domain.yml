@@ -1,0 +1,70 @@
+---
+author: dhanushka.p@ustocktrade.com
+projectId: com.ust.groupa
+version: 0.0.0
+serviceCoreVersion: 2.1.7.165
+types:
+  Timestamp:
+    load: com.ustack.types.Timestamp
+  GenericResponse:
+    load: com.ustack.service.core.response.GenericResponse
+  OrderStatus:
+    type: Enum
+    values:
+      - NEW
+      - CNC
+      - REJ
+      - FIL
+      - PFIL
+      - EXP
+  TimeInForce:
+    type: Enum
+    values:
+      - DAY
+      - IOC
+      - FOK
+      - GTD
+  OrderSide:
+    type: Enum
+    values:
+      - BUY
+      - SELL
+  OrderType:
+    type: Enum
+    values:
+      - LIMIT
+      - MARKET
+      - PEG_PRIMARY
+      - PEG_MIDPT
+      - PEG_MARKET
+fields:
+  orderId: String
+  symbol: String
+  orderQty: int
+  side: OrderSide
+  orderType: OrderType
+  orderStatus: OrderStatus
+  cumulativeQty: int
+  orderTime: Timestamp
+  userId: String
+  tif: TimeInForce
+  displayQty: int
+  minimumQty: int
+  price: BigDecimal
+  expireDate: Timestamp
+  orderRejectedTime: Timestamp
+  orderRejectedReason: String
+  lastQty: int
+  lastPrice: BigDecimal
+  orderExpiredReason: String
+  orderExpiredTime: Timestamp
+  orderCancelledReason: String
+  orderCancelledTime: Timestamp
+  orderRepricedTime: Timestamp
+  comment: String
+  nbboTime: Timestamp
+  nbo: BigDecimal
+  nbb: BigDecimal
+  symbolHalted: boolean
+  haltedReason: String
+  resumedReason: String

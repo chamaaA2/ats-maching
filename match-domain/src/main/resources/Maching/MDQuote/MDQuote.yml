@@ -1,0 +1,43 @@
+name: MDQuote
+rootEntity: Instrument
+displayName: MDQuote
+entityDescription: MDQuote
+idFields:
+  - symbol
+fields:
+  - symbol
+  - nbo
+  - nbb
+  - nbboTime
+activeWhen: ALWAYS
+events:
+  MDQuoteCreated:
+    phase: INITIALIZE
+    fields:
+      - symbol
+      - nbo
+      - nbb
+      - nbboTime
+    onApply:
+      - entity.nbo = event.nbo
+      - entity.nbb = event.nbb
+      - entity.nbboTime = event.nbboTime
+  MDQuoteUpdated:
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - nbo
+      - nbb
+      - nbboTime
+    onApply:
+      - entity.nbo = event.nbo
+      - entity.nbb = event.nbb
+      - entity.nbboTime = event.nbboTime
+commands:
+  MDRequest:
+    phase: INITIALIZE # is phase required in command
+    fields:
+      - symbol
+      - nbo
+      - nbb
+      - nbboTime

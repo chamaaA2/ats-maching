@@ -1,0 +1,94 @@
+name: AvidiaCBAccountTransfer
+displayName: Avidia Bank Transfers
+entityTags:
+  - Avidia
+entityDescription: Avidia bank transfers
+rootEntity: AvidiaCB
+idFields: 
+  - transferId
+fields:
+  - avidiaCBId
+  - transferId
+  - eventCheckPoint
+  - accountId
+  - fromAccount
+  - toAccount
+  - transferAmount
+  - bankTransferStatus
+activeWhen: daysPassed(entity._lastUpdatedTime) <= 5
+events:
+  AvidiaCBAccountTransferRequested:
+    phase: INITIALIZE
+    fields:
+      - avidiaCBId
+      - transferId
+      - eventCheckPoint
+      - accountId
+      - fromAccount
+      - toAccount
+      - transferAmount
+      - bankTransferStatus
+    onApply:
+      - entity.eventCheckPoint = event.eventCheckPoint
+      - entity.accountId = event.accountId
+      - entity.fromAccount = event.fromAccount
+      - entity.toAccount = event.toAccount
+      - entity.transferAmount = event.transferAmount
+      - entity.bankTransferStatus = PENDING
+  AvidiaCBAccountTransferSkipped:
+    phase: INITIALIZE
+    fields:
+      - avidiaCBId
+      - transferId
+      - eventCheckPoint
+      - accountId
+      - fromAccount
+      - toAccount
+      - transferAmount
+      - bankTransferStatus
+    onApply:
+      - entity.eventCheckPoint = event.eventCheckPoint
+      - entity.accountId = event.accountId
+      - entity.fromAccount = event.fromAccount
+      - entity.toAccount = event.toAccount
+      - entity.transferAmount = event.transferAmount
+      - entity.bankTransferStatus = SKIPPED    
+  AvidiaCBCPAccountTransferResponse:
+    phase: INITIALIZE
+    fields:
+      - avidiaCBId
+      - transferId
+      - eventCheckPoint
+      - accountId
+      - fromAccount
+      - toAccount
+      - transferAmount
+      - comment
+      - bankTransferStatus
+    onApply:
+      - entity.bankTransferStatus = event.bankTransferStatus
+  AvidiaCBSLDAccountTransferResponse:
+    phase: INITIALIZE
+    fields:
+      - avidiaCBId
+      - transferId
+      - eventCheckPoint
+      - accountId
+      - fromAccount
+      - toAccount
+      - amount
+      - comment
+      - bankTransferStatus
+      - responseTimestamp
+    onApply:
+      - entity.bankTransferStatus = event.bankTransferStatus
+commands:
+  AvidiaCBAccountTransferRequest:
+    phase: INITIALIZE
+    fields:
+      - avidiaCBId
+      - accountId
+      - fromAccount
+      - toAccount
+      - transferAmount
+      - txRef

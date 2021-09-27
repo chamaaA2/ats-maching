@@ -1,0 +1,42 @@
+name: Instrument
+idFields:
+  - symbol
+fields:
+  - symbol
+  - symbolHalted
+activeWhen: ALWAYS
+events:
+  InstrumentCreated :
+    phase: INITIALIZE
+    fields:
+      - symbol
+    onApply:
+      - entity.symbolHalted = false
+  InstrumentHalted :
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - haltedReason
+    onApply:
+      - entity.symbolHalted = true
+  InstrumentResumed :
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - resumedReason
+    onApply:
+      - entity.symbolHalted = false
+commands:
+  InstrumentCreateRequest :# is phase required in command
+  fields:
+    - symbol
+  InstrumentHaltRequest :
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - haltedReason
+  InstrumentResumeRequest :
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - resumedReason
