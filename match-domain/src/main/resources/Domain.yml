@@ -37,7 +37,18 @@ types:
       - PEG_PRIMARY
       - PEG_MIDPT
       - PEG_MARKET
+ruleCodes:
+  NONE:
+    ruleNo: 0
+    ruleFormat: No error
+errorCodes:
+  NONE:
+    errorNo: 0
+    errorFormat: No error
 fields:
+  requestId: String
+  connectionId: String
+  ftpPath: String
   orderId: String
   symbol: String
   orderQty: int

@@ -1,0 +1,6 @@
+events:
+  FTPDownloadRequested:
+    fields:
+      - requestId
+      - connectionId
+      - ftpPath
