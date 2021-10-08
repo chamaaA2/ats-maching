@@ -15,13 +15,8 @@ events:
     phase: INITIALIZE
     fields:
       - symbol
-      - nbo
-      - nbb
-      - nbboTime
     onApply:
-      - entity.nbo = event.nbo
-      - entity.nbb = event.nbb
-      - entity.nbboTime = event.nbboTime
+      - // Skip on apply
   MDQuoteUpdated:
     phase: INTERMEDIATE
     fields:
