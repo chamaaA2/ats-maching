@@ -45,6 +45,12 @@ errorCodes:
   NONE:
     errorNo: 0
     errorFormat: No error
+  INSTRUMENT_ALREADY_EXIST:
+    errorNo: 1
+    errorFormat: Instrument [symbol] already exist
+  INSTRUMENT_DOES_NOT_EXIST:
+    errorNo: 1
+    errorFormat: Instrument [symbol] doest not exist
 fields:
   requestId: String
   connectionId: String
