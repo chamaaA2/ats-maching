@@ -49,8 +49,11 @@ errorCodes:
     errorNo: 1
     errorFormat: Instrument [symbol] already exist
   INSTRUMENT_DOES_NOT_EXIST:
-    errorNo: 1
+    errorNo: 2
     errorFormat: Instrument [symbol] doest not exist
+  ORDER_DOES_NOT_EXIST:
+    errorNo: 3
+    errorFormat: Order [orderId] doest not exist
 fields:
   requestId: String
   connectionId: String
@@ -86,3 +89,6 @@ fields:
   symbolHalted: boolean
   haltedReason: String
   resumedReason: String
+  isMarketOpen: boolean
+  date: String
+  time: Timestamp

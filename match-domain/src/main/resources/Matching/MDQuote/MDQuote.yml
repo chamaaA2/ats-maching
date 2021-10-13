@@ -28,11 +28,12 @@ events:
       - entity.nbo = event.nbo
       - entity.nbb = event.nbb
       - entity.nbboTime = event.nbboTime
-commands:
-  MDRequest:
-    phase: INITIALIZE # is phase required in command
+  TickerQuoteUpdated:
+    phase: INTERMEDIATE
     fields:
       - symbol
       - nbo
       - nbb
       - nbboTime
+    onApply:
+      - // Skip on apply

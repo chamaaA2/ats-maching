@@ -1,0 +1,46 @@
+name: OrderBook
+rootEntity: Instrument
+displayName: OrderBook
+entityDescription: OrderBook
+idFields:
+  - symbol
+fields:
+  - symbol
+  - isMarketOpen
+activeWhen: ALWAYS
+events:
+  OrderBookCreated:
+    phase: INITIALIZE
+    fields:
+      - symbol
+    onApply:
+      - // Skip on apply
+  MktClosed:
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - date
+      - time
+    onApply:
+      - entity.isMarketOpen = false
+  MktOpened:
+    phase: INTERMEDIATE
+    fields:
+      - symbol
+      - date
+      - time
+    onApply:
+      - entity.isMarketOpen = true
+commands:
+  MktCloseRequest:
+    phase: INITIALIZE
+    fields:
+      - symbol
+      - date
+      - time
+  MktOpenRequest:
+    phase: INITIALIZE
+    fields:
+      - symbol
+      - date
+      - time
