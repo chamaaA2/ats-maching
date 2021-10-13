@@ -54,6 +54,9 @@ errorCodes:
   ORDER_DOES_NOT_EXIST:
     errorNo: 3
     errorFormat: Order [orderId] doest not exist
+  ORDER_BOOK_DOES_NOT_EXIST:
+    errorNo: 4
+    errorFormat: OrderBook [symbol] doest not exist
 fields:
   requestId: String
   connectionId: String

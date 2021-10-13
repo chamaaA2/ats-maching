@@ -8,6 +8,7 @@ import com.ust.match.mdQuote.OnMDQuoteUpdated;
 import com.ust.match.mdQuote.OnTickerQuoteUpdatedHandler;
 import com.ust.match.order.OnCancelOrderRequest;
 import com.ust.match.orderBook.OnMktCloseRequest;
+import com.ust.match.orderBook.OnMktOpenRequest;
 import com.ustack.common.Injector;
 import com.ustack.service.ServiceProvider;
 
@@ -25,5 +26,6 @@ public class MatchingService extends ServiceProvider<Instrument> {
         registerCmdHandler(OnCancelOrderRequest.class);
 
         registerCmdHandler(OnMktCloseRequest.class);
+        registerCmdHandler(OnMktOpenRequest.class);
     }
 }
