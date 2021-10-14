@@ -57,6 +57,9 @@ errorCodes:
   ORDER_BOOK_DOES_NOT_EXIST:
     errorNo: 4
     errorFormat: OrderBook [symbol] doest not exist
+  MDQUOTE_DOES_NOT_EXIST:
+    errorNo: 5
+    errorFormat: MDQuote [symbol] doest not exist
 fields:
   requestId: String
   connectionId: String

@@ -23,7 +23,7 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
 
     public GenericResponse execute(CmdContext<Instrument> cmdContext, PlaceOrderRequest cmd) {
         boolean isMktOpen = cmdContext.getEntity(OrderBook.class, cmd.getSymbol()).map(orderBook -> orderBook.isIsMarketOpen())
-                .orElseThrow(() -> GroupaErrorCodeException.ORDER_BOOK_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
+                .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
         String error = null;
         String orderId = AtsUtils.getNewOrderId(cmdContext);
         Timestamp time = TimeUtils.getCurrentTimestamp();
@@ -33,7 +33,7 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
             case PEG_PRIMARY:
             case PEG_MIDPT: {
                 price = cmdContext.getEntity(MDQuote.class, cmd.getSymbol())
-                        .map(quote -> cmd.getSide().equals(OrderSide.SELL) ? quote.getNbo() : quote.getNbb())
+                        .map(quote -> getQuotePrice(cmd, quote))
                         .orElseThrow(() -> GroupaErrorCodeException.ORDER_BOOK_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
                 if (!cmd.getTif().equals(TimeInForce.DAY))
                     error = "PEG Order tif type must be DAY";
@@ -67,5 +67,30 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
             cmdContext.applyEvent(Order.class, orderId, accepted);
             return GenericResponse.success(orderId);
         }
+    }
+
+    private BigDecimal getQuotePrice(PlaceOrderRequest cmd, MDQuote quote) {
+        BigDecimal price = BigDecimal.ZERO;
+        switch (cmd.getOrderType()) {
+            case PEG_PRIMARY: {
+                if (cmd.getSide().equals(OrderSide.SELL))
+                    price = quote.getNbo();
+                else
+                    price = quote.getNbb();
+                break;
+            }
+            case PEG_MARKET: {
+                if (cmd.getSide().equals(OrderSide.BUY))
+                    price = quote.getNbo();
+                else
+                    price = quote.getNbb();
+                break;
+            }
+            case PEG_MIDPT: {
+                price = quote.getNbo().add(quote.getNbb()).divide(new BigDecimal(2));
+                break;
+            }
+        }
+        return price.setScale(2);
     }
 }

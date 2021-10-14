@@ -11,8 +11,10 @@ import com.ustack.service.core.response.GenericResponse;
 public class OnInstrumentResumeRequest extends EntityCommandHandler<Instrument, InstrumentResumeRequest, GenericResponse> {
 
     public GenericResponse execute(CmdContext<Instrument> cmdContext, InstrumentResumeRequest cmd) {
-        cmdContext.getEntity(Instrument.class, cmd.getSymbol())
+        Instrument instrument = cmdContext.getEntity(Instrument.class, cmd.getSymbol())
                 .orElseThrow(() -> GroupaErrorCodeException.INSTRUMENT_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
+        if (!instrument.isSymbolHalted())
+            return GenericResponse.failed("Instrument already Resumed :" + cmd.getSymbol());
         InstrumentResumed resumed = new InstrumentResumed(cmd.getSymbol(), cmd.getResumedReason());
         cmdContext.applyEvent(Instrument.class, cmd.getSymbol(), resumed);
         return GenericResponse.success();

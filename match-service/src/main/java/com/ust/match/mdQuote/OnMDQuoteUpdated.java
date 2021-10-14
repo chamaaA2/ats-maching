@@ -19,13 +19,33 @@ public class OnMDQuoteUpdated extends EntityEventHandler<Instrument, MDQuoteUpda
         evtContext.getActiveEntitySet(Order.class).stream().filter(order -> order.getOrderType().in(OrderType.PEG_MARKET
                 , OrderType.PEG_MIDPT, OrderType.PEG_PRIMARY))
                 .forEach(entity -> {
-                    BigDecimal lastPrice;
-                    if (entity.getSide().equals(OrderSide.SELL))
-                        lastPrice = event.getNbo();
-                    else
-                        lastPrice = event.getNbb();
-                    OrderRepriced repriced = new OrderRepriced(entity.getOrderId(), event.getSymbol(), lastPrice, event.getNbboTime());
+                    OrderRepriced repriced = new OrderRepriced(entity.getOrderId(), event.getSymbol(), getPrice(entity, event), event.getNbboTime());
                     evtContext.applyEvent(Order.class, entity.getOrderId(), repriced);
                 });
+    }
+
+    private BigDecimal getPrice(Order entity, MDQuoteUpdated event) {
+        BigDecimal lastPrice = BigDecimal.ZERO;
+        switch (entity.getOrderType()) {
+            case PEG_PRIMARY: {
+                if (entity.getSide().equals(OrderSide.SELL))
+                    lastPrice = event.getNbo();
+                else
+                    lastPrice = event.getNbb();
+                break;
+            }
+            case PEG_MARKET: {
+                if (entity.getSide().equals(OrderSide.BUY))
+                    lastPrice = event.getNbo();
+                else
+                    lastPrice = event.getNbb();
+                break;
+            }
+            case PEG_MIDPT: {
+                lastPrice = event.getNbo().add(event.getNbb()).divide(new BigDecimal(2));
+                break;
+            }
+        }
+        return lastPrice.setScale(2);
     }
 }
