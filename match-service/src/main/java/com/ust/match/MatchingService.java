@@ -7,7 +7,7 @@ import com.ust.match.Instrument.OnInstrumentResumeRequest;
 import com.ust.match.mdQuote.OnMDQuoteUpdated;
 import com.ust.match.mdQuote.OnTickerQuoteUpdatedHandler;
 import com.ust.match.order.OnCancelOrderRequest;
-import com.ust.match.order.OnOrderAccepted;
+import com.ust.match.order.OnPlaceOrderRequestHandler;
 import com.ust.match.orderBook.OnMktCloseRequest;
 import com.ust.match.orderBook.OnMktClosed;
 import com.ust.match.orderBook.OnMktOpenRequest;
@@ -26,7 +26,7 @@ public class MatchingService extends ServiceProvider<Instrument> {
         registerEvtHandler(OnMDQuoteUpdated.class);
 
         registerCmdHandler(OnCancelOrderRequest.class);
-        registerCmdHandler(OnOrderAccepted.class);
+        registerCmdHandler(OnPlaceOrderRequestHandler.class);
 
         registerCmdHandler(OnMktCloseRequest.class);
         registerCmdHandler(OnMktOpenRequest.class);
