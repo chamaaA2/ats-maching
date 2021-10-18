@@ -1,0 +1,53 @@
+reactor:
+    servicePort: 7778
+    membershipPort: 4801
+
+logLevel: DEBUG
+
+entityProvider: com.ustack.service.dynamodb.DynamodbEntityProvider
+leadershipProvider: com.ustack.service.dynamodb.DynamodbLeadershipProvider
+keyRoutingProvider: com.ustack.service.dynamodb.DynamodbKeyRoutingProvider
+
+zones:
+    local:
+        webApi:
+            host: 0.0.0.0
+            port: 8080
+        websocket:
+            host: 0.0.0.0
+            port: 8000
+        providers:
+            -   provider: com.ustack.service.configservice.ConfigService
+            -   provider: com.ustack.service.genericquery.GenericQueryService
+            -   provider: com.ustack.service.filemanager.FileManagerService
+            -   provider: com.ust.match.MatchingService
+        functions:
+            -   name: lb
+                func: com.ustack.service.KeyLoadBalancer
+                router: LEADER_BASED
+            -   name: reactorAppQueryService
+                func: com.ustack.app.ReactorAppQueryService
+                router: ROUND_ROBIN
+            -   name: statCollector
+                func: com.ustack.app.ReactorAppStatCollector
+                router: ROUND_ROBIN
+            -   name: SqlReplicator
+                func: com.ustack.service.sqlreplicator.SqlReplicator
+                router: LEADER_BASED
+
+env:
+    ENV_NAME: uatslocal
+    AWS_REGION: us-east-1
+    DYNAMODB_HOST: http://localhost:8000
+    CONTROL_TABLE: control
+    DEFAULT_PERSISTED_TABLE: default_persisted
+    DEFAULT_STREAM_TABLE: default_stream
+    DEFAULT_SNAPSHOT_TABLE: default_snapshot
+    LEADERSHIP_HB_INTERVAL: 30
+    LEADERSHIP_CHECK_INTERVAL: 5
+    LEADERSHIP_MAX_RETRIES: 5
+    FILE_SERVICE: TEST
+    PGSQL_HOST: localhost:5432
+    PGSQL_USERNAME: admin
+    PGSQL_PASSWORD: ust123
+    SCHEMA_DIRECTORY: ./match-domain/src/main/resources

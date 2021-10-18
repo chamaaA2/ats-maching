@@ -1,0 +1,4 @@
+CREATE_TABLE PERSISTED control
+CREATE_TABLE STREAM default_stream
+CREATE_TABLE SNAPSHOT default_snapshot
+CREATE_TABLE PERSISTED default_persisted

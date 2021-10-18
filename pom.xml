@@ -16,15 +16,107 @@
     <modules>
         <module>match-domain</module>
         <module>match-service</module>
+        <module>app</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>development</id>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.ustack</groupId>
+                        <artifactId>ustack-all</artifactId>
+                        <version>0.0.0</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.ustack.base</groupId>
+                                <artifactId>shared-dependencies</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.ustack</groupId>
+                        <artifactId>management-tool</artifactId>
+                        <version>0.0.0</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>com.ustack</groupId>
+                        <artifactId>test-lib</artifactId>
+                        <version>0.0.0</version>
+                        <scope>test</scope>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.ustack.base</groupId>
+                                <artifactId>shared-dependencies</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>com.ustack.base</groupId>
+                    <artifactId>shared-dependencies</artifactId>
+                    <version>0.0.0</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.ustack</groupId>
+                        <artifactId>domaingen-tool</artifactId>
+                        <version>0.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-sources</phase>
+                                <id>domain-gen</id>
+                                <goals>
+                                    <goal>DomainGen</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>com.ustack</groupId>
             <artifactId>ustack-all</artifactId>
-            <version>${ustack.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ustack</groupId>
+            <artifactId>management-tool</artifactId>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.ustack</groupId>
+                <artifactId>ustack-all</artifactId>
+                <version>${ustack.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ustack</groupId>
+                <artifactId>management-tool</artifactId>
+                <version>${ustack.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.springframework.build</groupId>
+                <artifactId>aws-maven</artifactId>
+                <version>5.0.0.RELEASE</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -52,4 +144,56 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>libs-release</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>maven-s3-release-repo</id>
+            <name>libs-release</name>
+            <url>s3://repo.ustocktrade.com/releases</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>maven-s3-snapshot-repo</id>
+            <name>libs-snapshot</name>
+            <url>s3://repo.ustocktrade.com/snapshots</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>libs-release</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </pluginRepository>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>maven-s3-release-repo</id>
+            <name>libs-release</name>
+            <url>s3://repo.ustocktrade.com/releases</url>
+        </pluginRepository>
+        <pluginRepository>
+            <snapshots/>
+            <id>maven-s3-snapshot-repo</id>
+            <name>libs-snapshot</name>
+            <url>s3://repo.ustocktrade.com/snapshots</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
