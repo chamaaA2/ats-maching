@@ -8,7 +8,7 @@ Feature: on_instrument_create_request
   functionality: Create Instrument entity or generate response "Instrument entity already exists"
 
   Background:
-    Given testing OnInstrumentCreateRequest functionality of InstrumentService for root id symbol
+    Given testing OnInstrumentCreateRequest functionality of MatchingService for root id AAPL
 
     And system date is 2021/10/18 and time is 09:30:00
 
@@ -24,14 +24,14 @@ Feature: on_instrument_create_request
       | InstrumentCreated |
 
     And InstrumentCreated event expected result like this
-      | symbol | symbolHalted |
-      | AAPL   | false        |
+      | symbol |
+      | AAPL   |
 
     And Instrument entity state as follows
       | symbol | symbolHalted |
       | AAPL   | false        |
 
-  Scenario: CreateCalendar_02
+  Scenario: OnInstrumentCreateRequest_02
   Input command received, but entity already exist and it is not halted
   Expected Behavior: No events generated, Create failure response
 
@@ -49,7 +49,7 @@ Feature: on_instrument_create_request
       | success | message                  |
       | false   | INSTRUMENT_ALREADY_EXIST |
 
-  Scenario: CreateCalendar_03
+  Scenario: OnInstrumentCreateRequest_03
   Input command received, but entity already exist and it is halted
   Expected Behavior: No events generated, Create failure response
 
