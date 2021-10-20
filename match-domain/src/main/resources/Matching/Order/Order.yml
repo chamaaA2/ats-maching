@@ -78,7 +78,7 @@ events:
       - entity.minimumQty = event.minimumQty
       - entity.price = event.price
       - entity.expireDate = event.expireDate
-  OrderPfilled:
+  OrderExecuted:
     phase: INTERMEDIATE
     fields:
       - orderId
@@ -86,19 +86,9 @@ events:
       - orderQty
       - lastQty
       - lastPrice
+      - orderStatus
     onApply:
-      - entity.orderStatus = PFIL
-      - entity.cumulativeQty += event.lastQty
-  OrderFilled:
-    phase: INTERMEDIATE
-    fields:
-      - orderId
-      - symbol
-      - orderQty
-      - lastQty
-      - lastPrice
-    onApply:
-      - entity.orderStatus = FIL
+      - entity.orderStatus = event.orderStatus
       - entity.cumulativeQty += event.lastQty
   OrderExpired:
     phase: INTERMEDIATE

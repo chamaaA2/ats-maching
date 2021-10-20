@@ -4,13 +4,16 @@ import com.ust.groupa.domain.entities.instrument.Instrument;
 import com.ust.match.Instrument.OnInstrumentCreateRequest;
 import com.ust.match.Instrument.OnInstrumentHaltRequest;
 import com.ust.match.Instrument.OnInstrumentResumeRequest;
+import com.ust.match.mdQuote.MatchOrderOnMdQuoteUpdated;
 import com.ust.match.mdQuote.OnMDQuoteUpdated;
 import com.ust.match.mdQuote.OnTickerQuoteUpdatedHandler;
 import com.ust.match.order.OnCancelOrderRequest;
+import com.ust.match.order.OnOrderAccepted;
 import com.ust.match.order.OnPlaceOrderRequestHandler;
 import com.ust.match.orderBook.OnMktCloseRequest;
 import com.ust.match.orderBook.OnMktClosed;
 import com.ust.match.orderBook.OnMktOpenRequest;
+import com.ust.match.orderBook.OnMktOpened;
 import com.ustack.common.Injector;
 import com.ustack.service.ServiceProvider;
 
@@ -24,12 +27,15 @@ public class MatchingService extends ServiceProvider<Instrument> {
 
         registerEvtHandler(OnTickerQuoteUpdatedHandler.class);
         registerEvtHandler(OnMDQuoteUpdated.class);
+        registerEvtHandler(MatchOrderOnMdQuoteUpdated.class);
 
         registerCmdHandler(OnCancelOrderRequest.class);
         registerCmdHandler(OnPlaceOrderRequestHandler.class);
+        registerEvtHandler(OnOrderAccepted.class);
 
         registerCmdHandler(OnMktCloseRequest.class);
         registerCmdHandler(OnMktOpenRequest.class);
         registerEvtHandler(OnMktClosed.class);
+        registerEvtHandler(OnMktOpened.class);
     }
 }
