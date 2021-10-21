@@ -1,7 +1,6 @@
 package com.ust.match.order;
 
 import com.ust.groupa.domain.entities.instrument.Instrument;
-import com.ust.groupa.domain.entities.instrument.mdquote.MDQuote;
 import com.ust.groupa.domain.entities.instrument.order.Order;
 import com.ust.groupa.domain.entities.instrument.order.events.OrderAccepted;
 import com.ust.groupa.domain.enums.OrderSide;

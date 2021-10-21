@@ -1,7 +1,6 @@
 package com.ust.match.orderBook;
 
 import com.ust.groupa.domain.entities.instrument.Instrument;
-import com.ust.groupa.domain.entities.instrument.mdquote.MDQuote;
 import com.ust.groupa.domain.entities.instrument.order.Order;
 import com.ust.groupa.domain.entities.instrument.orderbook.events.MktOpened;
 import com.ust.groupa.domain.enums.OrderSide;

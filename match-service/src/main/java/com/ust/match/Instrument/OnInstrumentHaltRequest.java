@@ -5,7 +5,6 @@ import com.ust.groupa.domain.entities.instrument.commands.InstrumentHaltRequest;
 import com.ust.groupa.domain.entities.instrument.events.InstrumentHalted;
 import com.ust.groupa.domain.errors.GroupaErrorCodeException;
 import com.ustack.service.core.CmdContext;
-import com.ustack.service.core.Entity;
 import com.ustack.service.core.EntityCommandHandler;
 import com.ustack.service.core.response.GenericResponse;
 
