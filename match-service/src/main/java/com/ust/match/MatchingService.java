@@ -14,6 +14,7 @@ import com.ust.match.orderBook.OnMktCloseRequest;
 import com.ust.match.orderBook.OnMktClosed;
 import com.ust.match.orderBook.OnMktOpenRequest;
 import com.ust.match.orderBook.OnMktOpened;
+import com.ust.match.query.GetMatchingOrderBookHandler;
 import com.ustack.common.Injector;
 import com.ustack.service.ServiceProvider;
 
@@ -37,5 +38,7 @@ public class MatchingService extends ServiceProvider<Instrument> {
         registerCmdHandler(OnMktOpenRequest.class);
         registerEvtHandler(OnMktClosed.class);
         registerEvtHandler(OnMktOpened.class);
+
+        registerQueryHandler(GetMatchingOrderBookHandler.class);
     }
 }
