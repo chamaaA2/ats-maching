@@ -44,3 +44,8 @@ commands:
       - symbol
       - date
       - time
+queries:
+  GetMatchingOrderBook:
+    fields:
+      - symbol
+    response: GenericResponse
