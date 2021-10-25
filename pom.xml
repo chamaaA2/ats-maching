@@ -17,6 +17,7 @@
         <module>match-domain</module>
         <module>match-service</module>
         <module>app</module>
+        <module>match-service-test</module>
     </modules>
 
     <profiles>

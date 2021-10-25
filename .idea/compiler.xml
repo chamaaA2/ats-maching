@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="match-service-test" />
         <module name="app" />
         <module name="match-domain" />
         <module name="match-service" />
@@ -17,6 +18,7 @@
       <module name="app" options="-Xlint:all,-options,-path" />
       <module name="match-domain" options="-Xlint:all,-options,-path" />
       <module name="match-service" options="-Xlint:all,-options,-path" />
+      <module name="match-service-test" options="-Xlint:all,-options,-path" />
     </option>
   </component>
 </project>
