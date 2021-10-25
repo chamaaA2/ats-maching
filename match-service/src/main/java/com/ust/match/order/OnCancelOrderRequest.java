@@ -17,7 +17,7 @@ public class OnCancelOrderRequest extends EntityCommandHandler<Instrument, Cance
     public GenericResponse execute(CmdContext<Instrument> cmdContext, CancelOrderRequest cmd) {
         Optional<Order> entity = cmdContext.getEntity(Order.class, cmd.getOrderId());
         if (!entity.isPresent())
-            GroupaErrorCodeException.ORDER_DOES_NOT_EXIST(err ->err.setOrderId(cmd.getOrderId()));
+            throw GroupaErrorCodeException.ORDER_DOES_NOT_EXIST(err ->err.setOrderId(cmd.getOrderId()));
         if(!entity.get().isActive())
             return GenericResponse.failed();
         OrderCancelled cancelled = new OrderCancelled(cmd.getOrderId(),cmd.getSymbol(),cmd.getComment(), TimeUtils.getCurrentTimestamp());
