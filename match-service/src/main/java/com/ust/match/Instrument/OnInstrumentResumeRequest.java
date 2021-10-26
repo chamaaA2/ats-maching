@@ -14,7 +14,7 @@ public class OnInstrumentResumeRequest extends EntityCommandHandler<Instrument, 
         Instrument instrument = cmdContext.getEntity(Instrument.class, cmd.getSymbol())
                 .orElseThrow(() -> GroupaErrorCodeException.INSTRUMENT_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
         if (!instrument.isSymbolHalted())
-            return GenericResponse.failed("Instrument already Resumed :" + cmd.getSymbol());
+            return GenericResponse.failed("INSTRUMENT_ALREADY_RESUMED");
         InstrumentResumed resumed = new InstrumentResumed(cmd.getSymbol(), cmd.getResumedReason());
         cmdContext.applyEvent(Instrument.class, cmd.getSymbol(), resumed);
         return GenericResponse.success();
