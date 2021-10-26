@@ -15,7 +15,7 @@ public class OnInstrumentHaltRequest extends EntityCommandHandler<Instrument, In
     public GenericResponse execute(CmdContext<Instrument> cmdContext, InstrumentHaltRequest cmd) {
         Optional<Instrument> instrument = cmdContext.getEntity(Instrument.class, cmd.getSymbol());
         if (!instrument.isPresent())
-            throw GroupaErrorCodeException.INSTRUMENT_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol()));
+            return GenericResponse.failed("INSTRUMENT_DOES_NOT_EXIST");
         if (instrument.map(entity -> entity.isSymbolHalted()).get())
             return GenericResponse.failed("INSTRUMENT_ALREADY_HALTED");
         InstrumentHalted halted = new InstrumentHalted(cmd.getSymbol(), cmd.getHaltedReason());
