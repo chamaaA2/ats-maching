@@ -21,16 +21,16 @@ Feature: on_cancel_order_request
   Expected behavior : OrderCancelled entity should be generated
 
     When CancelOrderRequest received with these input parameters
-      | symbol | orderId       | comment        |
-      | AAPL   | Of-0000000001 | Not Interested |
+      | symbol | orderId      | comment        |
+      | AAPL   | Of-0000000002 | Not Interested |
 
     Then following events should be generated
       | OrderCancelled |
 
     And OrderCancelled event expected result like this
       | orderId       |
-      | Of-0000000001 |
+      | Of-0000000002 |
 
     And Order entity state as follows
       | orderId       | symbol | orderStatus |
-      | Of-0000000001 | AAPL   | CNC         |
+      | Of-0000000002 | AAPL   | CNC         |
