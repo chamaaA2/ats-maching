@@ -3,11 +3,10 @@ package com.ust.match.utils;
 import com.ust.groupa.domain.entities.instrument.Instrument;
 import com.ust.groupa.domain.entities.instrument.mdquote.MDQuote;
 import com.ust.groupa.domain.entities.instrument.order.Order;
+import com.ust.groupa.domain.entities.instrument.order.events.OrderCancelled;
 import com.ust.groupa.domain.entities.instrument.order.events.OrderExecuted;
-import com.ust.groupa.domain.entities.instrument.order.events.OrderExpired;
 import com.ust.groupa.domain.enums.OrderSide;
 import com.ust.groupa.domain.enums.OrderStatus;
-import com.ust.groupa.domain.enums.OrderType;
 import com.ust.groupa.domain.enums.TimeInForce;
 import com.ust.groupa.domain.errors.GroupaErrorCodeException;
 import com.ustack.service.core.EvtContext;
@@ -42,12 +41,11 @@ public class MatchUtils {
             return value.compareTo(quote.getNbo()) < 0;
     }
 
-    public static void expireOrders(EvtContext<Instrument> context) {
+    public static void cancelOrdersAfterTrade(EvtContext<Instrument> context) {
         Timestamp time = context.currentTimestamp();
-        context.getActiveEntitySet(Order.class).stream().filter(order -> order.getTif().in(TimeInForce.FOK, TimeInForce.IOC))
-                .filter(order -> order.getOrderType().equals(OrderType.MARKET)).filter(order -> order.getMinimumQty() > 0)
+        context.getActiveEntitySet(Order.class).stream().filter(order -> order.getTif().in(TimeInForce.FOK, TimeInForce.IOC) || order.getMinimumQty() > 0)
                 .forEach(order -> context.applyEvent(Order.class, order.getOrderId(),
-                        new OrderExpired(order.getOrderId(), order.getSymbol(), "Order Book", time)));
+                        new OrderCancelled(order.getOrderId(), order.getSymbol(), "Order Book cancelled", time)));
     }
 
     public static void printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {

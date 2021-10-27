@@ -23,7 +23,7 @@ public class OnMktOpened extends EntityEventHandler<Instrument, MktOpened> {
         loadOrders(evtContext);
         sortOrderBook();
         MatchUtils.printTrades(evtContext, null, sellOrderList, buyOrderList);
-        MatchUtils.expireOrders(evtContext);
+        MatchUtils.cancelOrdersAfterTrade(evtContext);
     }
 
     public void loadOrders(EvtContext<Instrument> context) {
