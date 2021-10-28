@@ -28,7 +28,7 @@ Feature: match_order_on_md_quote_updated
     Then following events should be generated
       | OrderExecuted |
 
-  Scenario: MatchOrderOnMdQuoteUpdated_02
+  Scenario: MatchOrderOnMdQuoteUpdatedHandler_02
 
     When MDQuoteUpdated received with these input parameters
       | symbol | nbb | nbo | nbboTime                         |
@@ -36,3 +36,4 @@ Feature: match_order_on_md_quote_updated
 
     Then following events should be generated
       | OrderExecuted |
+
