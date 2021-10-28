@@ -57,13 +57,13 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
         if (error != null) {
             OrderRejected rejected = new OrderRejected(orderId, cmd.getSymbol(), cmd.getOrderQty(), cmd.getSide()
                     , cmd.getOrderType(), time, cmd.getUserId(), cmd.getTif(), cmd.getDisplayQty(), cmd.getMinimumQty()
-                    , price, cmd.getExpireDate(), error);
+                    , price, cmd.getExpireDates(), error);
             cmdContext.applyEvent(Order.class, orderId, rejected);
             return GenericResponse.failed(orderId);
         } else {
             OrderAccepted accepted = new OrderAccepted(orderId, cmd.getSymbol(), cmd.getOrderQty(), cmd.getSide()
                     , cmd.getOrderType(), time, cmd.getUserId(), cmd.getTif(), cmd.getDisplayQty(), cmd.getMinimumQty()
-                    , price, cmd.getExpireDate());
+                    , price, cmd.getExpireDates());
             cmdContext.applyEvent(Order.class, orderId, accepted);
             return GenericResponse.success(orderId);
         }
