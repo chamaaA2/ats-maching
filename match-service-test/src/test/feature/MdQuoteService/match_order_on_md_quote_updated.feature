@@ -17,9 +17,15 @@ Feature: match_order_on_md_quote_updated
     And system date is 2021/10/26 and time is 12:30:00
 
   Scenario: MatchOrderOnMdQuoteUpdatedHandler_01
+  Input Command : LIMIT
     Given MDQuote entity exist as follows
       | symbol | nbb | nbo | nbboTime                         |
       | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    And Order entity exist as follows
+      | orderId       | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | Of-0000000001 | AAPL   | 10       | BUY  | MARKET    | NEW         | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
 
     When MDQuoteUpdated received with these input parameters
       | symbol | nbb | nbo | nbboTime                         |
@@ -29,10 +35,57 @@ Feature: match_order_on_md_quote_updated
       | OrderExecuted |
 
   Scenario: MatchOrderOnMdQuoteUpdatedHandler_02
+  Input Command : Market
 
     When MDQuoteUpdated received with these input parameters
       | symbol | nbb | nbo | nbboTime                         |
       | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    And Order entity exist as follows
+      | orderId       | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | Of-0000000001 | AAPL   | 10       | BUY  | MARKET    | NEW         | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderExecuted |
+
+  Scenario: MatchOrderOnMdQuoteUpdatedHandler_03
+  Input Command : PEG_PRIMARY
+
+    When MDQuoteUpdated received with these input parameters
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    And Order entity exist as follows
+      | orderId       | symbol | orderQty | side | orderType   | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_PRIMARY | NEW         | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderExecuted |
+
+  Scenario: MatchOrderOnMdQuoteUpdatedHandler_04
+  Input Command : PEG_MIDPT
+
+    When MDQuoteUpdated received with these input parameters
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    And Order entity exist as follows
+      | orderId       | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_MIDPT | NEW         | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderExecuted |
+
+  Scenario: MatchOrderOnMdQuoteUpdatedHandler_05
+  Input Command : PEG_MARKET
+
+    When MDQuoteUpdated received with these input parameters
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    And Order entity exist as follows
+      | orderId       | symbol | orderQty | side | orderType  | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_MARKET | NEW         | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
 
     Then following events should be generated
       | OrderExecuted |
