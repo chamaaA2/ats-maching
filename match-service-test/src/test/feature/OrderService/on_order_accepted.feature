@@ -22,23 +22,23 @@ Feature: on_order_accepted
   Expected Behaviour: OrderExecuted event generated
 
     Given Order entity exist as follows
-      | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDate                       |
-      | order_1 | APPL   | 25       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:30:00')` | userId_1 | DAY | 25         | 0          | 11    | `toEpoch('2021/10/18 23:59:59')` |
-      | order_2 | APPL   | 10       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10.5  | `toEpoch('2021/10/18 23:59:59')` |
+      | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_1 | APPL   | 25       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:30:00')` | userId_1 | DAY | 25         | 0          | 11    | 0 |
+      | order_2 | APPL   | 10       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10.5  | 0 |
 
     When OrderAccepted received with these input parameters
-      | orderId | symbol | orderQty | side | orderType | orderAcceptedTime                | userId   | tif | displayQty | minimumQty | price | expireDate                       |
-      | order_2 | APPL   | 10       | SELL | LIMIT     | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10.5  | `toEpoch('2021/10/18 23:59:59')` |
+      | orderId | symbol | orderQty | side | orderType | orderAcceptedTime                | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_2 | APPL   | 10       | SELL | LIMIT     | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10.5  | 0 |
 
     Then following events should be generated
       | OrderExecuted |
 
     And OrderExecuted event expected result like this
       | orderId | orderStatus | lastQty | lastPrice |
-      | order_1 | PFIL        | 10      | 10.5      |
-      | order_2 | FIL         | 10      | 10.5      |
+      | order_1 | PFIL        | 10      | 11      |
+      | order_2 | FIL         | 10      | 11      |
 
     And Order entity state as follows
-      | orderId | orderStatus | lastQty | cumulativeQty |
-      | order_1 | PFIL        | 10      | 10            |
-      | order_2 | FIL         | 10      | 10            |
+      | orderId | symbol |orderStatus | cumulativeQty |
+      | order_1 | APPL |PFIL        | 10      |
+      | order_2 | APPL |FIL         | 10      |

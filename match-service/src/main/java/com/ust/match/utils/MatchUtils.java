@@ -21,14 +21,15 @@ public class MatchUtils {
         List<BookOrder> list = new ArrayList<>();
         if (order.getDisplayQty() > 0)
             list.add(new BookOrder(order, order.getDisplayQty(), true));
-        list.add(new BookOrder(order, order.getOrderQty() - order.getDisplayQty(), false));
+        if ((order.getOrderQty() - order.getDisplayQty()) > 0)
+            list.add(new BookOrder(order, order.getOrderQty() - order.getDisplayQty(), false));
         return list;
     }
 
     private static Order pickAggressor(List<BookOrder> sellList, List<BookOrder> buyList) {
         BookOrder sellTop = sellList.get(0);
         BookOrder buyTop = buyList.get(0);
-        if (sellTop.getTime() > buyTop.getTime())
+        if (sellTop.getTime() < buyTop.getTime())
             return buyTop.getOrder();
         else
             return sellTop.getOrder();
@@ -60,14 +61,13 @@ public class MatchUtils {
         boolean isCompleted = false;
         BigDecimal lastPrice;
         while (!isCompleted) {
-            i++;
             BookOrder nextOrder = aggList.get(i);
             if (aggressor.getOrderQty() > nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
                 if (aggressor.getTif().equals(TimeInForce.FOK) || aggressor.getMinimumQty() > nextOrder.getQty())
                     break;
-                if (checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
@@ -76,7 +76,7 @@ public class MatchUtils {
             } else if (aggressor.getOrderQty() == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
-                if (checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
@@ -86,11 +86,7 @@ public class MatchUtils {
             } else {
                 cumQty = aggressor.getOrderQty();
                 lastPrice = nextOrder.getPrice();
-                if (nextOrder.getOrder().getTif().equals(TimeInForce.FOK))
-                    continue;
-                if (nextOrder.getOrder().getMinimumQty() > 0)
-                    continue;
-                if (checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
@@ -98,6 +94,7 @@ public class MatchUtils {
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 isCompleted = true;
             }
+            i++;
         }
     }
 }
