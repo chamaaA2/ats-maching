@@ -49,3 +49,7 @@ queries:
     fields:
       - symbol
     response: GenericResponse
+  GetInstrumentList:
+    fields:
+      - symbol
+    response: GenericResponse

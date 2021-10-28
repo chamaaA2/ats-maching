@@ -6,7 +6,7 @@ import com.ust.match.Instrument.OnInstrumentHaltRequest;
 import com.ust.match.Instrument.OnInstrumentResumeRequest;
 import com.ust.match.mdQuote.MatchOrderOnMdQuoteUpdated;
 import com.ust.match.mdQuote.OnMDQuoteUpdated;
-import com.ust.match.mdQuote.OnTickerQuoteUpdatedHandler;
+import com.ust.match.mdQuote.OnTickerQuoteUpdateRequest;
 import com.ust.match.order.OnCancelOrderRequest;
 import com.ust.match.order.OnOrderAccepted;
 import com.ust.match.order.OnPlaceOrderRequestHandler;
@@ -14,6 +14,7 @@ import com.ust.match.orderBook.OnMktCloseRequest;
 import com.ust.match.orderBook.OnMktClosed;
 import com.ust.match.orderBook.OnMktOpenRequest;
 import com.ust.match.orderBook.OnMktOpened;
+import com.ust.match.query.GetInstrumentListHandler;
 import com.ust.match.query.GetMatchingOrderBookHandler;
 import com.ustack.common.Injector;
 import com.ustack.service.ServiceProvider;
@@ -26,9 +27,9 @@ public class MatchingService extends ServiceProvider<Instrument> {
         registerCmdHandler(OnInstrumentHaltRequest.class);
         registerCmdHandler(OnInstrumentResumeRequest.class);
 
-        registerEvtHandler(OnTickerQuoteUpdatedHandler.class);
-        registerEvtHandler(OnMDQuoteUpdated.class);
-        registerEvtHandler(MatchOrderOnMdQuoteUpdated.class);
+        registerCmdHandler(OnTickerQuoteUpdateRequest.class);
+        registerEvtHandler(OnMDQuoteUpdated.class,1);
+        registerEvtHandler(MatchOrderOnMdQuoteUpdated.class,2);
 
         registerCmdHandler(OnCancelOrderRequest.class);
         registerCmdHandler(OnPlaceOrderRequestHandler.class);
@@ -40,5 +41,6 @@ public class MatchingService extends ServiceProvider<Instrument> {
         registerEvtHandler(OnMktOpened.class);
 
         registerQueryHandler(GetMatchingOrderBookHandler.class);
+        registerQueryHandler(GetInstrumentListHandler.class);
     }
 }

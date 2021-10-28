@@ -15,7 +15,7 @@ zones:
             port: 8080
         websocket:
             host: 0.0.0.0
-            port: 8000
+            port: 8001
         providers:
             -   provider: com.ustack.service.configservice.ConfigService
             -   provider: com.ustack.service.genericquery.GenericQueryService
