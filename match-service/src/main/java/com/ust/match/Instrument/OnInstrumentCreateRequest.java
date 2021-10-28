@@ -15,7 +15,7 @@ public class OnInstrumentCreateRequest extends EntityCommandHandler<Instrument, 
     public GenericResponse execute(CmdContext<Instrument> cmdContext, InstrumentCreateRequest cmd) {
         Optional<Instrument> instrument = cmdContext.getEntity(Instrument.class, cmd.getSymbol());
         if (instrument.isPresent())
-            throw GroupaErrorCodeException.INSTRUMENT_ALREADY_EXIST(err ->err.setSymbol(cmd.getSymbol()));
+            return GenericResponse.failed("INSTRUMENT_ALREADY_EXISTS");
         InstrumentCreated created = new InstrumentCreated(cmd.getSymbol());
         cmdContext.applyEvent(Instrument.class, cmd.getSymbol(), created);
         return GenericResponse.success();

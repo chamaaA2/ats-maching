@@ -8,7 +8,7 @@ Feature: on_instrument_create_request
   functionality: Create Instrument entity or generate response "Instrument entity already exists"
 
   Background:
-    Given testing OnInstrumentCreateRequest functionality of MatchingService for root id AAPL
+    Given testing OnInstrumentCreateRequest functionality of MatchingService for root id APPL
 
     And system date is 2021/10/18 and time is 09:30:00
 
@@ -18,18 +18,18 @@ Feature: on_instrument_create_request
 
     When InstrumentCreateRequest received with input parameters
       | symbol |
-      | AAPL   |
+      | APPL   |
 
     Then following events should be generated
       | InstrumentCreated |
 
     And InstrumentCreated event expected result like this
       | symbol |
-      | AAPL   |
+      | APPL   |
 
     And Instrument entity state as follows
       | symbol | symbolHalted |
-      | AAPL   | false        |
+      | APPL   | false        |
 
   Scenario: OnInstrumentCreateRequest_02
   Input command received, but entity already exist and it is not halted
@@ -37,17 +37,17 @@ Feature: on_instrument_create_request
 
     Given Instrument entity exist as follows
       | symbol | symbolHalted |
-      | AAPL   | false        |
+      | APPL   | false        |
 
     When InstrumentCreateRequest received with input parameters
       | symbol |
-      | AAPL   |
+      | APPL   |
 
     Then no events should be generated
 
     And expected response as follows
       | success | message                  |
-      | false   | INSTRUMENT_ALREADY_EXIST |
+      | false   | INSTRUMENT_ALREADY_EXISTS|
 
   Scenario: OnInstrumentCreateRequest_03
   Input command received, but entity already exist and it is halted
@@ -55,14 +55,14 @@ Feature: on_instrument_create_request
 
     When Instrument entity exist as follows
       | symbol | symbolHalted |
-      | AAPL   | true         |
+      | APPL   | true         |
 
     And InstrumentCreateRequest received with input parameters
       | symbol |
-      | AAPL   |
+      | APPL   |
 
     Then no events should be generated
 
     And expected response as follows
       | success | message                  |
-      | false   | INSTRUMENT_ALREADY_EXIST |
+      | false   | INSTRUMENT_ALREADY_EXISTS |
