@@ -51,14 +51,15 @@ public class MatchUtils {
                         new OrderCancelled(order.getOrderId(), order.getSymbol(), "Order Book cancelled", time)));
     }
 
-    public static void printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {
+    public static boolean printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {
+        boolean aggressorWorkDone = false;
         MDQuote quote = context.getEntity(MDQuote.class, context.getRootId())
                 .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(context.getRootId())));
         Order aggressor = pickAggressor(sellList, buyList);
         if (aggressor == null)
-            return;
+            return aggressorWorkDone;
         if (incomingOrder != null && !aggressor.getOrderId().equals(incomingOrder.getOrderId()))
-            return;
+            return aggressorWorkDone;
         List<BookOrder> aggList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
         int i = 0;
         int cumQty;
@@ -79,6 +80,7 @@ public class MatchUtils {
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
+                aggressorWorkDone = true;
             } else if (aggressor.getOrderQty() == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
@@ -88,6 +90,7 @@ public class MatchUtils {
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
+                aggressorWorkDone = true;
                 isCompleted = true;
             } else {
                 cumQty = aggressor.getOrderQty();
@@ -98,9 +101,11 @@ public class MatchUtils {
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
+                aggressorWorkDone = true;
                 isCompleted = true;
             }
             i++;
         }
+        return aggressorWorkDone;
     }
 }
