@@ -27,6 +27,8 @@ public class MatchUtils {
     }
 
     private static Order pickAggressor(List<BookOrder> sellList, List<BookOrder> buyList) {
+        if (sellList.isEmpty() || buyList.isEmpty())
+            return null;
         BookOrder sellTop = sellList.get(0);
         BookOrder buyTop = buyList.get(0);
         if (sellTop.getTime() < buyTop.getTime())
@@ -53,6 +55,8 @@ public class MatchUtils {
         MDQuote quote = context.getEntity(MDQuote.class, context.getRootId())
                 .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(context.getRootId())));
         Order aggressor = pickAggressor(sellList, buyList);
+        if (aggressor == null)
+            return;
         if (incomingOrder != null && !aggressor.getOrderId().equals(incomingOrder.getOrderId()))
             return;
         List<BookOrder> aggList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
@@ -61,7 +65,9 @@ public class MatchUtils {
         boolean isCompleted = false;
         BigDecimal lastPrice;
         while (!isCompleted) {
-            BookOrder nextOrder = aggList.get(i);
+            if(aggList.isEmpty())
+                break;
+            BookOrder nextOrder = aggList.remove(i);
             if (aggressor.getOrderQty() > nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
