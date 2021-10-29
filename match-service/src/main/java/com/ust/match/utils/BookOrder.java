@@ -47,7 +47,7 @@ public class BookOrder implements Comparable<BookOrder> {
     public int compareTo(@NotNull BookOrder o) {
         return Comparator.comparing(this::checkOrderTypeSort)
                 .thenComparing(this::checkSideAndPriceSort)
-                .thenComparing(BookOrder::isDisplayQty)
+                .thenComparing(this::checkOrderDisplay)
                 .thenComparingLong(BookOrder::getTime)
                 .compare(this, o);
     }
@@ -61,5 +61,9 @@ public class BookOrder implements Comparable<BookOrder> {
 
     public int checkOrderTypeSort(BookOrder o) {
         return o.getOrder().getOrderType().equals(OrderType.MARKET) ? -1 : 0;
+    }
+
+    public int checkOrderDisplay(BookOrder o) {
+        return o.isDisplayQty() ? -1 : 0;
     }
 }
