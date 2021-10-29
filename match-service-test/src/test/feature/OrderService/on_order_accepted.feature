@@ -18,27 +18,28 @@ Feature: on_order_accepted
 
   Scenario: OnOrderAccepted_01
 
-  Incoming order matcxhes to resting contra order (order book with one contra order)
+  Incoming order matches to resting contra order
+  (incoming sell order fill, one contra order fill, normal mkt)
   Expected Behaviour: OrderExecuted event generated
 
     Given Order entity exist as follows
       | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
-      | order_1 | APPL   | 25       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:30:00')` | userId_1 | DAY | 25         | 0          | 11    | 0 |
-      | order_2 | APPL   | 10       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10.5  | 0 |
+      | order_1 | APPL   | 40       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:30:00')` | userId_1 | DAY | 25         | 0          | 11    | 0          |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10    | 0          |
 
     When OrderAccepted received with these input parameters
       | orderId | symbol | orderQty | side | orderType | orderAcceptedTime                | userId   | tif | displayQty | minimumQty | price | expireDates |
-      | order_2 | APPL   | 10       | SELL | LIMIT     | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10.5  | 0 |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10    | 0          |
 
     Then following events should be generated
       | OrderExecuted |
 
     And OrderExecuted event expected result like this
       | orderId | orderStatus | lastQty | lastPrice |
-      | order_1 | PFIL        | 10      | 11      |
-      | order_2 | FIL         | 10      | 11      |
+      | order_1 | FIL         | 40      | 11        |
+      | order_2 | FIL         | 40      | 11       |
 
     And Order entity state as follows
-      | orderId | symbol |orderStatus | cumulativeQty |
-      | order_1 | APPL |PFIL        | 10      |
-      | order_2 | APPL |FIL         | 10      |
+      | orderId | orderStatus | cumulativeQty |
+      | order_1 | FIL         | 40            |
+      | order_2 | FIL         | 40            |
