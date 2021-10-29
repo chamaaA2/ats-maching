@@ -18,7 +18,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_01
-  Input command received PEG order during market closed
+  Input command : PEG order entered during market closed
   Expected Behavior : Order Reject Entity should be generated
 
     Given OrderBook entity exist as follows
@@ -46,7 +46,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_02
-  Input command received PEG order without TIF type DAY
+  Input command : PEG order without TIF type DAY
   Expected Behavior : Order Reject Entity should be generated
 
     Given OrderBook entity exist as follows
@@ -74,7 +74,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_03
-  Input command received limit order with TIF type FOK in a market close session
+  Input command : limit order with a TIF type FOK in a market close session
   Expected Behavior : Order Reject Entity should be generated
 
     Given OrderBook entity exist as follows
@@ -102,7 +102,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_04
-  Input command received limit order with TIF type IOC in a market close session
+  Input command : limit order with a TIF type IOC in a market close session
   Expected Behavior : Order Reject Entity should be generated
 
     Given OrderBook entity exist as follows
@@ -130,7 +130,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_05
-  Input command received with MARKET order type in a market close session
+  Input command : MARKET order type in a market close session
   Expected Behavior : Order Reject Entity should be created
 
     Given OrderBook entity exist as follows
@@ -158,7 +158,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_06
-  Input command received with MARKET order type in a market open session
+  Input command : MARKET order type in a market open session
   Expected Behavior : Order Accept Entity should be created
 
     Given OrderBook entity exist as follows
@@ -186,7 +186,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_08
-  Input command received with MARKET order type with a TIF type GTD
+  Input command : MARKET order type with a TIF type GTD
   Expected Behavior : Order Accept Entity should be created
 
     Given OrderBook entity exist as follows
@@ -214,7 +214,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_09
-  Input command received with MARKET order type with a TIF type FOK
+  Input command : MARKET order type with a TIF type FOK
   Expected Behavior : Order Accept Entity should be created
 
     Given OrderBook entity exist as follows
@@ -242,7 +242,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_10
-  Input command received with MARKET order type with a TIF type IOC
+  Input command : MARKET order type with a TIF type IOC
   Expected Behavior : Order Accept Entity should be created
 
     Given OrderBook entity exist as follows
@@ -270,7 +270,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_11
-  Input command received with LIMIT order type with a TIF type IOC on Market Close session
+  Input command : LIMIT order type with a TIF type IOC on Market Close session
   Expected Behavior : Order Reject Entity should be created
 
     Given OrderBook entity exist as follows
@@ -298,7 +298,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_12
-  Input command received with LIMIT order type with a TIF type FOK on Market Close session
+  Input command : LIMIT order type with a TIF type FOK on Market Close session
   Expected Behavior : Order Reject Entity should be created
 
     Given OrderBook entity exist as follows
@@ -326,7 +326,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_13
-  Input command received with LIMIT order type with a TIF type IOC on Market Open Session
+  Input command : LIMIT order type with a TIF type IOC on Market Open Session
   Expected Behavior : Order Accept Entity should be created
 
     Given OrderBook entity exist as follows
@@ -354,7 +354,7 @@ Feature: on_place_order_request_handler
 
 
   Scenario: OnPlaceOrderRequestHandler_14
-  Input command received with LIMIT order type and with a TIF type FOK on Market Open Session
+  Input command : LIMIT order type and with a TIF type FOK on Market Open Session
   Expected Behavior : Order Accept Entity should be created
 
     Given OrderBook entity exist as follows
@@ -604,3 +604,142 @@ Feature: on_place_order_request_handler
       | orderId       | symbol | orderStatus |
       | Of-0000000001 | AAPL   | REJ         |
 
+
+  Scenario: OnPlaceOrderRequestHandler_23
+  Input command : PEG Order Type with a Display qty
+  Expected Behavior : Order Reject Entity should be created
+
+    Given OrderBook entity exist as follows
+      | symbol | isMarketOpen |
+      | AAPL   | true         |
+
+    And MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    When PlaceOrderRequest received with these input parameters
+      | symbol | orderQty | side | orderType | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | AAPL   | 10       | BUY  | PEG       | userId_01 | DAY | 0          | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderRejected |
+
+    And OrderRejected event expected result like this
+      | orderId       | orderQty |
+      | Of-0000000001 | 10       |
+
+    And Order entity state as follows
+      | orderId       | symbol | orderStatus |
+      | Of-0000000001 | AAPL   | REJ         |
+
+
+  Scenario: OnPlaceOrderRequestHandler_24
+  Input command : Market Order Type entered with a Minimum Quantity higher tha Order Quantity
+  Expected Behavior : Order Reject Entity should be created
+
+    Given OrderBook entity exist as follows
+      | symbol | isMarketOpen |
+      | AAPL   | true         |
+
+    And MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    When PlaceOrderRequest received with these input parameters
+      | symbol | orderQty | side | orderType | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | AAPL   | 10       | BUY  | MARKET    | userId_01 | GTD | 10         | 15         | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderRejected |
+
+    And OrderRejected event expected result like this
+      | orderId       | orderQty |
+      | Of-0000000001 | 10       |
+
+    And Order entity state as follows
+      | orderId       | symbol | orderStatus |
+      | Of-0000000001 | AAPL   | REJ         |
+
+
+  Scenario: OnPlaceOrderRequestHandler_25
+  Input command :  Market Order Type entered with a Display Quantity higher than Order Quantity
+  Expected Behavior : Order Reject Entity should be created
+
+    Given OrderBook entity exist as follows
+      | symbol | isMarketOpen |
+      | AAPL   | true         |
+
+    And MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    When PlaceOrderRequest received with these input parameters
+      | symbol | orderQty | side | orderType | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | AAPL   | 10       | BUY  | MARKET    | userId_01 | DAY | 15         | 10         | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderRejected |
+
+    And OrderRejected event expected result like this
+      | orderId       | orderQty |
+      | Of-0000000001 | 10       |
+
+    And Order entity state as follows
+      | orderId       | symbol | orderStatus |
+      | Of-0000000001 | AAPL   | REJ         |
+
+
+  Scenario: OnPlaceOrderRequestHandler_26
+  Input command : Limit Order Type with a TIF type GTD on a Market Open session without a Display qty
+  Expected Behavior : Order Reject Entity should be created
+
+    Given OrderBook entity exist as follows
+      | symbol | isMarketOpen |
+      | AAPL   | true         |
+
+    And MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    When PlaceOrderRequest received with these input parameters
+      | symbol | orderQty | side | orderType | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | AAPL   | 10       | BUY  | LIMIT     | userId_01 | GTD | 0          | 0          | 0     | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderRejected |
+
+    And OrderRejected event expected result like this
+      | orderId       | orderQty |
+      | Of-0000000001 | 10       |
+
+    And Order entity state as follows
+      | orderId       | symbol | orderStatus |
+      | Of-0000000001 | AAPL   | REJ         |
+
+
+  Scenario: OnPlaceOrderRequestHandler_27
+  Input command :  Market Order Type entered with a price.
+  Expected Behavior : Order Reject Entity should be created
+
+    Given OrderBook entity exist as follows
+      | symbol | isMarketOpen |
+      | AAPL   | true         |
+
+    And MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
+    When PlaceOrderRequest received with these input parameters
+      | symbol | orderQty | side | orderType | userId    | tif | displayQty | minimumQty | price | expireDate                       |
+      | AAPL   | 10       | BUY  | MARKET    | userId_01 | DAY | 10         | 10         | 150   | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | OrderRejected |
+
+    And OrderRejected event expected result like this
+      | orderId       | orderQty |
+      | Of-0000000001 | 10       |
+
+    And Order entity state as follows
+      | orderId       | symbol | orderStatus |
+      | Of-0000000001 | AAPL   | REJ         |
