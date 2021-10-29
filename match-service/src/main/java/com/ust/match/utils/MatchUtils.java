@@ -41,6 +41,10 @@ public class MatchUtils {
             return sellTop.getOrder();
     }
 
+    private static boolean checkIsTrade(Order aggressor, BookOrder nextOrder, MDQuote quote) {
+        return (!isPriceMatch(aggressor.getSide(), nextOrder.getPrice(), aggressor.getPrice()) || !checkWithinNbbo(aggressor.getSide(), nextOrder.getPrice(), quote));
+    }
+
     public static boolean isPriceMatch(OrderSide aggSide, BigDecimal constValue, BigDecimal aggValue) {
         if (aggSide.equals(OrderSide.SELL))
             return aggValue.compareTo(constValue) <= 0;
@@ -77,43 +81,46 @@ public class MatchUtils {
         int cumQty;
         boolean isCompleted = false;
         BigDecimal lastPrice;
+        int updatedConstOrderRemQty;
         while (!isCompleted) {
             if (constList.isEmpty())
                 break;
             BookOrder nextOrder = constList.remove(0);
             aggressor = context.getEntity(Order.class, aggressor.getOrderId()).get();
+            updatedConstOrderRemQty = nextOrder.getOrder().getOrderQty() - context.getEntity(Order.class, nextOrder.getOrder().getOrderId()).map(o -> o.getCumulativeQty()).get();
             int aggRemQty = aggressor.getOrderQty() - aggressor.getCumulativeQty();
             if (aggRemQty == 0)
                 break;
+            lastPrice = nextOrder.getPrice();
             if (aggRemQty > nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
-                lastPrice = nextOrder.getPrice();
                 if (aggressor.getTif().equals(TimeInForce.FOK) || aggressor.getMinimumQty() > nextOrder.getQty())
                     break;
-                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (checkIsTrade(aggressor, nextOrder, quote))
                     break;
+                OrderStatus status = updatedConstOrderRemQty > cumQty ? OrderStatus.PFIL : OrderStatus.FIL;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
-                        , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
+                        , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, status));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
             } else if (aggRemQty == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
-                lastPrice = nextOrder.getPrice();
-                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (checkIsTrade(aggressor, nextOrder, quote))
                     break;
+                OrderStatus status = updatedConstOrderRemQty > cumQty ? OrderStatus.PFIL : OrderStatus.FIL;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
-                        , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
+                        , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, status));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 aggressorWorkDone = true;
                 isCompleted = true;
             } else {
                 cumQty = aggRemQty;
-                lastPrice = nextOrder.getPrice();
-                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (checkIsTrade(aggressor, nextOrder, quote))
                     break;
+                OrderStatus status = updatedConstOrderRemQty > cumQty ? OrderStatus.PFIL : OrderStatus.FIL;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
-                        , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
+                        , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, status));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 aggressorWorkDone = true;
