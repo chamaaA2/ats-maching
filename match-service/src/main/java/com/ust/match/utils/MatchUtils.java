@@ -41,11 +41,18 @@ public class MatchUtils {
             return sellTop.getOrder();
     }
 
-    public static boolean checkWithinNbbo(OrderSide aggSide, BigDecimal value, MDQuote quote) {
+    public static boolean isPriceMatch(OrderSide aggSide, BigDecimal constValue, BigDecimal aggValue) {
         if (aggSide.equals(OrderSide.SELL))
-            return value.compareTo(quote.getNbb()) > 0;
+            return aggValue.compareTo(constValue) <= 0;
         else
-            return value.compareTo(quote.getNbo()) < 0;
+            return aggValue.compareTo(constValue) >= 0;
+    }
+
+    public static boolean checkWithinNbbo(OrderSide aggSide, BigDecimal constValue, MDQuote quote) {
+        if (aggSide.equals(OrderSide.SELL))
+            return constValue.compareTo(quote.getNbb()) > 0;
+        else
+            return constValue.compareTo(quote.getNbo()) < 0;
     }
 
     public static void cancelOrdersAfterTrade(EvtContext<Instrument> context) {
@@ -67,14 +74,13 @@ public class MatchUtils {
         if (incomingOrder != null && !aggressor.getOrderId().equals(incomingOrder.getOrderId()))
             return aggressorWorkDone;
         List<BookOrder> constList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
-        int i = 0;
         int cumQty;
         boolean isCompleted = false;
         BigDecimal lastPrice;
         while (!isCompleted) {
             if (constList.isEmpty())
                 break;
-            BookOrder nextOrder = constList.remove(i);
+            BookOrder nextOrder = constList.remove(0);
             aggressor = context.getEntity(Order.class, aggressor.getOrderId()).get();
             int aggRemQty = aggressor.getOrderQty() - aggressor.getCumulativeQty();
             if (aggRemQty == 0)
@@ -84,7 +90,7 @@ public class MatchUtils {
                 lastPrice = nextOrder.getPrice();
                 if (aggressor.getTif().equals(TimeInForce.FOK) || aggressor.getMinimumQty() > nextOrder.getQty())
                     break;
-                if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
@@ -93,7 +99,7 @@ public class MatchUtils {
             } else if (aggRemQty == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
-                if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
@@ -104,7 +110,7 @@ public class MatchUtils {
             } else {
                 cumQty = aggRemQty;
                 lastPrice = nextOrder.getPrice();
-                if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
@@ -113,7 +119,6 @@ public class MatchUtils {
                 aggressorWorkDone = true;
                 isCompleted = true;
             }
-            i++;
         }
         return aggressorWorkDone;
     }
