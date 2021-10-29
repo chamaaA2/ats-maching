@@ -62,7 +62,8 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
         }
         if (cmd.getMinimumQty() > 0 && !cmd.getTif().equals(TimeInForce.IOC))
             error = "If orders have minimum qty, tif must be (IOC)";
-
+        if (cmdContext.getEntity(Instrument.class, cmdContext.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
+            error = "Instrument halted.";
         if (error != null) {
             OrderRejected rejected = new OrderRejected(orderId, cmd.getSymbol(), cmd.getOrderQty(), cmd.getSide()
                     , cmd.getOrderType(), time, cmd.getUserId(), cmd.getTif(), cmd.getDisplayQty(), cmd.getMinimumQty()

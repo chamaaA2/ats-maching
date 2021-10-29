@@ -53,6 +53,8 @@ public class MatchUtils {
 
     public static boolean printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {
         boolean aggressorWorkDone = false;
+        if(context.getEntity(Instrument.class, context.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
+            return aggressorWorkDone;
         MDQuote quote = context.getEntity(MDQuote.class, context.getRootId())
                 .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(context.getRootId())));
         Order aggressor = pickAggressor(sellList, buyList);
