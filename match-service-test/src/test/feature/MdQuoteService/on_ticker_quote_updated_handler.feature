@@ -26,6 +26,10 @@ Feature: on_ticker_quote_updated_handler
 
   Scenario: OnTickerQuoteUpdateHandler_02
 
+    Given MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
+
     When TickerQuoteUpdated received with these input parameters
       | symbol | nbb | nbo | nbboTime                         |
       | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
@@ -33,3 +37,15 @@ Feature: on_ticker_quote_updated_handler
     Then following events should be generated
       | MDQuoteCreated |
 
+  Scenario: OnTickerQuoteUpdateHandler_03
+
+    Given MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 11  | 10  | `toEpoch('2021/10/26 09:30:00')` |
+
+    When TickerQuoteUpdated received with these input parameters
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 11  | 10  | `toEpoch('2021/10/26 09:30:00')` |
+
+    Then following events should be generated
+      | MDQuoteUpdated |

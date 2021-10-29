@@ -77,7 +77,7 @@ fields:
   displayQty: int
   minimumQty: int
   price: BigDecimal
-  expireDate: Timestamp
+  expireDates: int
   orderRejectedTime: Timestamp
   orderAcceptedTime: Timestamp
   orderRejectedReason: String

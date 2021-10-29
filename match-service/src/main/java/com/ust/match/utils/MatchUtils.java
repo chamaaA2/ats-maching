@@ -19,26 +19,40 @@ import java.util.List;
 public class MatchUtils {
     public static List<BookOrder> separateOrders(Order order) {
         List<BookOrder> list = new ArrayList<>();
-        if (order.getDisplayQty() > 0)
-            list.add(new BookOrder(order, order.getDisplayQty(), true));
-        list.add(new BookOrder(order, order.getOrderQty() - order.getDisplayQty(), false));
+        int remainingQty = order.getOrderQty() - order.getCumulativeQty();
+        int displayQty = Math.min(remainingQty, order.getDisplayQty());
+        int hiddenQty = remainingQty - displayQty;
+        if (displayQty > 0) {
+            list.add(new BookOrder(order, displayQty, true));
+        }
+        if (hiddenQty > 0)
+            list.add(new BookOrder(order, hiddenQty, false));
         return list;
     }
 
     private static Order pickAggressor(List<BookOrder> sellList, List<BookOrder> buyList) {
+        if (sellList.isEmpty() || buyList.isEmpty())
+            return null;
         BookOrder sellTop = sellList.get(0);
         BookOrder buyTop = buyList.get(0);
-        if (sellTop.getTime() > buyTop.getTime())
+        if (sellTop.getTime() < buyTop.getTime())
             return buyTop.getOrder();
         else
             return sellTop.getOrder();
     }
 
-    public static boolean checkWithinNbbo(OrderSide aggSide, BigDecimal value, MDQuote quote) {
+    public static boolean isPriceMatch(OrderSide aggSide, BigDecimal constValue, BigDecimal aggValue) {
         if (aggSide.equals(OrderSide.SELL))
-            return value.compareTo(quote.getNbb()) > 0;
+            return aggValue.compareTo(constValue) <= 0;
         else
-            return value.compareTo(quote.getNbo()) < 0;
+            return aggValue.compareTo(constValue) >= 0;
+    }
+
+    public static boolean checkWithinNbbo(OrderSide aggSide, BigDecimal constValue, MDQuote quote) {
+        if (aggSide.equals(OrderSide.SELL))
+            return constValue.compareTo(quote.getNbb()) > 0;
+        else
+            return constValue.compareTo(quote.getNbo()) < 0;
     }
 
     public static void cancelOrdersAfterTrade(EvtContext<Instrument> context) {
@@ -48,56 +62,64 @@ public class MatchUtils {
                         new OrderCancelled(order.getOrderId(), order.getSymbol(), "Order Book cancelled", time)));
     }
 
-    public static void printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {
+    public static boolean printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {
+        boolean aggressorWorkDone = false;
+        if (context.getEntity(Instrument.class, context.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
+            return aggressorWorkDone;
         MDQuote quote = context.getEntity(MDQuote.class, context.getRootId())
                 .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(context.getRootId())));
         Order aggressor = pickAggressor(sellList, buyList);
+        if (aggressor == null)
+            return aggressorWorkDone;
         if (incomingOrder != null && !aggressor.getOrderId().equals(incomingOrder.getOrderId()))
-            return;
-        List<BookOrder> aggList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
-        int i = 0;
+            return aggressorWorkDone;
+        List<BookOrder> constList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
         int cumQty;
         boolean isCompleted = false;
         BigDecimal lastPrice;
         while (!isCompleted) {
-            i++;
-            BookOrder nextOrder = aggList.get(i);
-            if (aggressor.getOrderQty() > nextOrder.getQty()) {
+            if (constList.isEmpty())
+                break;
+            BookOrder nextOrder = constList.remove(0);
+            aggressor = context.getEntity(Order.class, aggressor.getOrderId()).get();
+            int aggRemQty = aggressor.getOrderQty() - aggressor.getCumulativeQty();
+            if (aggRemQty == 0)
+                break;
+            if (aggRemQty > nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
                 if (aggressor.getTif().equals(TimeInForce.FOK) || aggressor.getMinimumQty() > nextOrder.getQty())
                     break;
-                if (checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
-            } else if (aggressor.getOrderQty() == nextOrder.getQty()) {
+            } else if (aggRemQty == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
-                if (checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
+                aggressorWorkDone = true;
                 isCompleted = true;
             } else {
-                cumQty = aggressor.getOrderQty();
+                cumQty = aggRemQty;
                 lastPrice = nextOrder.getPrice();
-                if (nextOrder.getOrder().getTif().equals(TimeInForce.FOK))
-                    continue;
-                if (nextOrder.getOrder().getMinimumQty() > 0)
-                    continue;
-                if (checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
+                if (!isPriceMatch(aggressor.getSide(), aggressor.getPrice(), nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
+                aggressorWorkDone = true;
                 isCompleted = true;
             }
         }
+        return aggressorWorkDone;
     }
 }

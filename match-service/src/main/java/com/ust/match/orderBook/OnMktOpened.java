@@ -20,10 +20,15 @@ public class OnMktOpened extends EntityEventHandler<Instrument, MktOpened> {
 
     @Override
     public void onEvent(EvtContext<Instrument> evtContext, MktOpened event) {
-        loadOrders(evtContext);
-        sortOrderBook();
-        MatchUtils.printTrades(evtContext, null, sellOrderList, buyOrderList);
-        MatchUtils.cancelOrdersAfterTrade(evtContext);
+        boolean aggDone;
+        do {
+            loadOrders(evtContext);
+            sortOrderBook();
+            aggDone = MatchUtils.printTrades(evtContext, null, sellOrderList, buyOrderList);
+            MatchUtils.cancelOrdersAfterTrade(evtContext);
+        } while (aggDone);
+
+
     }
 
     public void loadOrders(EvtContext<Instrument> context) {
@@ -32,9 +37,9 @@ public class OnMktOpened extends EntityEventHandler<Instrument, MktOpened> {
         buyOrderList = context.getActiveEntitySet(Order.class).stream().filter(order -> order.getSide()
                 .equals(OrderSide.BUY)).flatMap(order -> MatchUtils.separateOrders(order).stream()).collect(Collectors.toList());
     }
+
     private void sortOrderBook() {
         Collections.sort(buyOrderList);
         Collections.sort(sellOrderList);
-        Collections.reverse(buyOrderList);
     }
 }

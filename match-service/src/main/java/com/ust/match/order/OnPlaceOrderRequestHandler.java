@@ -23,7 +23,7 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
 
     public GenericResponse execute(CmdContext<Instrument> cmdContext, PlaceOrderRequest cmd) {
         boolean isMktOpen = cmdContext.getEntity(OrderBook.class, cmd.getSymbol()).map(orderBook -> orderBook.isIsMarketOpen())
-                .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
+                .orElseThrow(() -> GroupaErrorCodeException.ORDER_BOOK_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
         String error = null;
         String orderId = AtsUtils.getNewOrderId(cmdContext);
         Timestamp time = TimeUtils.getCurrentTimestamp();
@@ -34,11 +34,13 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
             case PEG_MIDPT: {
                 price = cmdContext.getEntity(MDQuote.class, cmd.getSymbol())
                         .map(quote -> getQuotePrice(cmd, quote))
-                        .orElseThrow(() -> GroupaErrorCodeException.ORDER_BOOK_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
+                        .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(cmd.getSymbol())));
                 if (!cmd.getTif().equals(TimeInForce.DAY))
                     error = "PEG Order tif type must be DAY";
                 else if (!isMktOpen)
                     error = "Order type PEG orders couldn't trade in Market close session";
+                else if (cmd.getExpireDates() > 0)
+                    error = "Order type PEG, tif DAY orders haven't expireDates value";
                 break;
             }
             case LIMIT: {
@@ -47,23 +49,31 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
                 break;
             }
             case MARKET: {
-                if (cmd.getTif().notIn(TimeInForce.DAY, TimeInForce.IOC, TimeInForce.FOK))
-                    error = "MARKET Order tif type must be DAY, IOC, FOK";
+                if (cmd.getTif().notIn(TimeInForce.IOC, TimeInForce.FOK))
+                    error = "MARKET Order tif type must be IOC, FOK";
                 else if (!isMktOpen)
                     error = "Order type MARKET orders couldn't trade in Market close session";
+                else if (cmd.getExpireDates() > 0)
+                    error = "Order type MKT orders haven't expireDates value";
+                else if (cmd.getPrice().compareTo(BigDecimal.ZERO) != 0)
+                    error = "Order type MKT orders haven't price value";
                 break;
             }
         }
+        if (cmd.getMinimumQty() > 0 && !cmd.getTif().equals(TimeInForce.IOC))
+            error = "If orders have minimum qty, tif must be (IOC)";
+        if (cmdContext.getEntity(Instrument.class, cmdContext.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
+            error = "Instrument halted.";
         if (error != null) {
             OrderRejected rejected = new OrderRejected(orderId, cmd.getSymbol(), cmd.getOrderQty(), cmd.getSide()
                     , cmd.getOrderType(), time, cmd.getUserId(), cmd.getTif(), cmd.getDisplayQty(), cmd.getMinimumQty()
-                    , price, cmd.getExpireDate(), error);
+                    , price, cmd.getExpireDates(), error);
             cmdContext.applyEvent(Order.class, orderId, rejected);
-            return GenericResponse.failed(orderId);
+            return GenericResponse.failed(error);
         } else {
             OrderAccepted accepted = new OrderAccepted(orderId, cmd.getSymbol(), cmd.getOrderQty(), cmd.getSide()
                     , cmd.getOrderType(), time, cmd.getUserId(), cmd.getTif(), cmd.getDisplayQty(), cmd.getMinimumQty()
-                    , price, cmd.getExpireDate());
+                    , price, cmd.getExpireDates());
             cmdContext.applyEvent(Order.class, orderId, accepted);
             return GenericResponse.success(orderId);
         }

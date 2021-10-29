@@ -18,7 +18,7 @@ fields:
   - displayQty
   - minimumQty
   - price
-  - expireDate
+  - expireDates
 activeWhen: entity.orderStatus == NEW or entity.orderStatus == PFIL
 events:
   OrderAccepted:
@@ -35,7 +35,7 @@ events:
       - displayQty
       - minimumQty
       - price
-      - expireDate
+      - expireDates
     onApply:
       - entity.orderQty = event.orderQty
       - entity.side = event.side
@@ -48,7 +48,7 @@ events:
       - entity.displayQty = event.displayQty
       - entity.minimumQty = event.minimumQty
       - entity.price = event.price
-      - entity.expireDate = event.expireDate
+      - entity.expireDates = event.expireDates
   OrderRejected:
     phase: INITIALIZE
     fields:
@@ -63,7 +63,7 @@ events:
       - displayQty
       - minimumQty
       - price
-      - expireDate
+      - expireDates
       - orderRejectedReason
     onApply:
       - entity.orderQty = event.orderQty
@@ -77,7 +77,7 @@ events:
       - entity.displayQty = event.displayQty
       - entity.minimumQty = event.minimumQty
       - entity.price = event.price
-      - entity.expireDate = event.expireDate
+      - entity.expireDates = event.expireDates
   OrderExecuted:
     phase: INTERMEDIATE
     fields:
@@ -130,7 +130,7 @@ commands: # No need add commands to Entity level becuase of we don't use entityI
       - displayQty
       - minimumQty
       - price
-      - expireDate
+      - expireDates
   CancelOrderRequest:
     phase: INTERMEDIATE
     fields:

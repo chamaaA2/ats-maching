@@ -40,6 +40,5 @@ public class OnOrderAccepted extends EntityEventHandler<Instrument, OrderAccepte
     private void sortOrderBook() {
         Collections.sort(buyOrderList);
         Collections.sort(sellOrderList);
-        Collections.reverse(buyOrderList);
     }
 }
