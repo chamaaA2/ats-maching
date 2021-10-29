@@ -41,6 +41,5 @@ public class OnMktOpened extends EntityEventHandler<Instrument, MktOpened> {
     private void sortOrderBook() {
         Collections.sort(buyOrderList);
         Collections.sort(sellOrderList);
-        Collections.reverse(buyOrderList);
     }
 }

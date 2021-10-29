@@ -40,6 +40,5 @@ public class MatchOrderOnMdQuoteUpdated extends EntityEventHandler<Instrument, M
     private void sortOrderBook() {
         Collections.sort(buyOrderList);
         Collections.sort(sellOrderList);
-        Collections.reverse(buyOrderList);
     }
 }
