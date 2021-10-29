@@ -17,7 +17,7 @@ Feature: on_mkt_close_request
 
     Given OrderBook entity exist as follows
       | symbol | isMarketOpen |
-      | AAPL   | false        |
+      | AAPL   |  true        |
 
     #And Order entity exist as follows
       #| orderId       | symbol | orderQty | side | orderType   | orderStatus | cumulativeQty | orderTime                        | userId    | tif | displayQty | minimumQty | price | expireDate                       |
