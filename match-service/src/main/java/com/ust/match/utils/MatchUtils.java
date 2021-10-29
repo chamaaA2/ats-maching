@@ -19,10 +19,14 @@ import java.util.List;
 public class MatchUtils {
     public static List<BookOrder> separateOrders(Order order) {
         List<BookOrder> list = new ArrayList<>();
-        if (order.getDisplayQty() > 0)
-            list.add(new BookOrder(order, order.getDisplayQty(), true));
-        if ((order.getOrderQty() - order.getDisplayQty()) > 0)
-            list.add(new BookOrder(order, order.getOrderQty() - order.getDisplayQty(), false));
+        int remainingQty = order.getOrderQty() - order.getCumulativeQty();
+        int displayQty = Math.min(remainingQty, order.getDisplayQty());
+        int hiddenQty = remainingQty - displayQty;
+        if (displayQty > 0) {
+            list.add(new BookOrder(order, displayQty, true));
+        }
+        if (hiddenQty > 0)
+            list.add(new BookOrder(order, hiddenQty, false));
         return list;
     }
 
@@ -53,7 +57,7 @@ public class MatchUtils {
 
     public static boolean printTrades(EvtContext<Instrument> context, Order incomingOrder, List<BookOrder> sellList, List<BookOrder> buyList) {
         boolean aggressorWorkDone = false;
-        if(context.getEntity(Instrument.class, context.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
+        if (context.getEntity(Instrument.class, context.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
             return aggressorWorkDone;
         MDQuote quote = context.getEntity(MDQuote.class, context.getRootId())
                 .orElseThrow(() -> GroupaErrorCodeException.MDQUOTE_DOES_NOT_EXIST(err -> err.setSymbol(context.getRootId())));
@@ -62,16 +66,20 @@ public class MatchUtils {
             return aggressorWorkDone;
         if (incomingOrder != null && !aggressor.getOrderId().equals(incomingOrder.getOrderId()))
             return aggressorWorkDone;
-        List<BookOrder> aggList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
+        List<BookOrder> constList = aggressor.getSide().equals(OrderSide.SELL) ? buyList : sellList;
         int i = 0;
         int cumQty;
         boolean isCompleted = false;
         BigDecimal lastPrice;
         while (!isCompleted) {
-            if(aggList.isEmpty())
+            if (constList.isEmpty())
                 break;
-            BookOrder nextOrder = aggList.remove(i);
-            if (aggressor.getOrderQty() > nextOrder.getQty()) {
+            BookOrder nextOrder = constList.remove(i);
+            aggressor = context.getEntity(Order.class, aggressor.getOrderId()).get();
+            int aggRemQty = aggressor.getOrderQty() - aggressor.getCumulativeQty();
+            if (aggRemQty == 0)
+                break;
+            if (aggRemQty > nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
                 if (aggressor.getTif().equals(TimeInForce.FOK) || aggressor.getMinimumQty() > nextOrder.getQty())
@@ -82,8 +90,7 @@ public class MatchUtils {
                         , aggressor.getSymbol(), nextOrder.getOrder().getOrderQty(), cumQty, lastPrice, OrderStatus.FIL));
                 context.applyEvent(Order.class, aggressor.getOrderId(), new OrderExecuted(aggressor.getOrderId(), aggressor.getSymbol()
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
-                aggressorWorkDone = true;
-            } else if (aggressor.getOrderQty() == nextOrder.getQty()) {
+            } else if (aggRemQty == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
                 lastPrice = nextOrder.getPrice();
                 if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
@@ -95,7 +102,7 @@ public class MatchUtils {
                 aggressorWorkDone = true;
                 isCompleted = true;
             } else {
-                cumQty = aggressor.getOrderQty();
+                cumQty = aggRemQty;
                 lastPrice = nextOrder.getPrice();
                 if (!checkWithinNbbo(aggressor.getSide(), lastPrice, quote))
                     break;
