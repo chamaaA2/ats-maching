@@ -46,6 +46,8 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
             case LIMIT: {
                 if (cmd.getTif().in(TimeInForce.FOK, TimeInForce.IOC) && !isMktOpen)
                     error = "Order tif (FOK, IOC) LIMIT orders couldn't trade in Market close session";
+                else if (cmd.getExpireDates() > 0 && !cmd.getTif().in(TimeInForce.GTD))
+                    error = "if tif doesn't GTD, orders haven't expireDates value";
                 break;
             }
             case MARKET: {
