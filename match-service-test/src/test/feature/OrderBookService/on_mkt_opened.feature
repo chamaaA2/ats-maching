@@ -10,8 +10,6 @@ Feature: on_mkt_opened
   Background:
     Given testing OnMktOpened functionality of MatchingService for root id AAPL
 
-    And system date is 2021/10/26 and time is 12:30:00
-
     And Instrument entity exist as follows
       | symbol | symbolHalted |
       | AAPL   | false        |
@@ -23,11 +21,18 @@ Feature: on_mkt_opened
       | symbol | isMarketOpen |
       | AAPL   | true         |
 
+    And MDQuote entity exist as follows
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/18 09:25:00')` |
+
     And Order entity exist as follows
-      | orderId       | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | Of-0000000001 | AAPL   | 10       | BUY  | LIMIT     | NEW         | 0             | 10        | userId_01 | GTD | 10         | 0          | 0     | 2           |
-      | Of-0000000002 | AAPL   | 10       | SELL | LIMIT     | NEW         | 0             | 10        | userId_01 | GTD | 10         | 0          | 0     | 2           |
+      | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_1 | APPL   | 40       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:27:00')` | userId_1 | GTD | 25         | 0          | 11    | 0           |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:28:00')` | userId_2 | GTD | 10         | 0          | 10    | 0           |
+
+    And MktOpened received with these input parameters
+      | symbol | date       | time                             |
+      | AAPL   | 2021/10/18 | `toEpoch('2021/10/18 09:29:00')` |
 
     Then following events should be generated
       | OrderExecuted |
-
