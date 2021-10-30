@@ -3,9 +3,9 @@ Feature: on_mkt_close_request
   Test OnMktCloseRequest Event handler
 
   entity:
-  input command: TickerQuoteUpdated
-  output event: MDQuoteUpdated MDQuoteCreated
-  functionality: Create or Update MDQuote Entity
+  input command: MKT Closed Request
+  output event: MKT closed
+  functionality: Market close
 
   Background:
     Given testing OnMktCloseRequest functionality of MatchingService for root id AAPL
@@ -19,9 +19,10 @@ Feature: on_mkt_close_request
       | symbol | isMarketOpen |
       | AAPL   |  true        |
 
-    #And Order entity exist as follows
-      #| orderId       | symbol | orderQty | side | orderType   | orderStatus | cumulativeQty | orderTime                        | userId    | tif | displayQty | minimumQty | price | expireDate                       |
-      #| Of-0000000001 | AAPL   | 10       | BUY  | PEG_PRIMARY | NEW         | 0             | `toEpoch('2021/10/26 09:31:00')` | userId_01 | GTD | 10         | 0          | 0     | `toEpoch('2021/10/27 09:30:00')` |
+    And Order entity exist as follows
+      | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_1 | APPL   | 40       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:27:00')` | userId_1 | GTD | 25         | 0          | 11    | 0           |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:28:00')` | userId_2 | GTD | 10         | 0          | 10    | 0           |
 
     When MktCloseRequest received with these input parameters
       | symbol | date       | time                             |
