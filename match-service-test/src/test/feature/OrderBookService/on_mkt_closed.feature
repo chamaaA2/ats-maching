@@ -3,9 +3,9 @@ Feature: on_mkt_closed
   Test OnMktClosed Event handler
 
   entity:
-  input command: TickerQuoteUpdated
-  output event: MDQuoteUpdated MDQuoteCreated
-  functionality: Create or Update MDQuote Entity
+  input command: MktClosed
+  output event: OrderExpired
+  functionality: Market Closed
 
   Background:
     Given testing OnMktClosed functionality of MatchingService for root id AAPL
@@ -78,14 +78,14 @@ Feature: on_mkt_closed
       | AAPL   | true         |
 
     And Order entity exist as follows
-      | orderId       | symbol | orderQty | side | orderType  | orderStatus | cumulativeQty | orderTime                        | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_MARKET | NEW         | 0             | `toEpoch('2021/10/27 09:30:00')` | userId_01 | DAY | 10         | 0          | 0     | 1           |
+      | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_1 | APPL   | 40       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:27:00')` | userId_1 | GTD | 25         | 0          | 11    | 0           |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:28:00')` | userId_2 | GTD | 10         | 0          | 10    | 0           |
 
     When MktClosed received with these input parameters
       | symbol | date       | time                             |
       | AAPL   | 2021-10-26 | `toEpoch('2021/10/27 09:30:00')` |
 
-    Then following events should be generated
-      | OrderExpired |
+    Then no events should be generated
 
 
