@@ -41,6 +41,8 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
                     error = "Order type PEG orders couldn't trade in Market close session";
                 else if (cmd.getExpireDates() > 0)
                     error = "Order type PEG, tif DAY orders haven't expireDates value";
+                else if (cmd.getPrice().compareTo(BigDecimal.ZERO) > 0)
+                    error = "Order type PEG Orders haven't initial set price";
                 break;
             }
             case LIMIT: {
@@ -48,6 +50,8 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
                     error = "Order tif (FOK, IOC) LIMIT orders couldn't trade in Market close session";
                 else if (cmd.getExpireDates() > 0 && !cmd.getTif().in(TimeInForce.GTD))
                     error = "if tif doesn't GTD, orders haven't expireDates value";
+                else if (cmd.getPrice().compareTo(BigDecimal.ZERO) <= 0)
+                    error = "Price must Be positive values";
                 break;
             }
             case MARKET: {
@@ -62,10 +66,17 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
                 break;
             }
         }
-        if (cmd.getMinimumQty() > 0 && !cmd.getTif().equals(TimeInForce.IOC))
+        if (cmd.getMinimumQty() > cmd.getOrderQty())
+            error = "Min Qty must be same or less than Order Qty";
+        else if (cmd.getMinimumQty() > 0 && !cmd.getTif().equals(TimeInForce.IOC))
             error = "If orders have minimum qty, tif must be (IOC)";
-        if (cmdContext.getEntity(Instrument.class, cmdContext.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
+        else if (cmdContext.getEntity(Instrument.class, cmdContext.getRootId()).map(instrument -> instrument.isSymbolHalted()).get())
             error = "Instrument halted.";
+        else if (cmd.getDisplayQty() > cmd.getOrderQty())
+            error = "Display Qty must be same or less than Order Qty";
+        else if (cmd.getPrice().compareTo(BigDecimal.ZERO) < 0 || cmd.getOrderQty() < 0 || cmd.getMinimumQty() < 0 || cmd.getDisplayQty() < 0)
+            error = "you have to use positive values";
+
         if (error != null) {
             OrderRejected rejected = new OrderRejected(orderId, cmd.getSymbol(), cmd.getOrderQty(), cmd.getSide()
                     , cmd.getOrderType(), time, cmd.getUserId(), cmd.getTif(), cmd.getDisplayQty(), cmd.getMinimumQty()
