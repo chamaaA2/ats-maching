@@ -25,7 +25,6 @@ Feature: on_md_quote_updated
       | symbol | nbb | nbo | nbboTime                         |
       | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
 
-
     Then following events should be generated
       | OrderRepriced |
 
