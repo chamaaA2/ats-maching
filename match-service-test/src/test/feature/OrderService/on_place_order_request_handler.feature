@@ -994,3 +994,4 @@ Feature: on_place_order_request_handler
     And Order entity state as follows
       | orderId       | symbol | orderStatus |
       | Of-0000000001 | AAPL   | REJ         |
+
