@@ -95,19 +95,18 @@ Feature: on_order_accepted
     Then following events should be generated
       | OrderExecuted |
 
+    And Order entity state as follows
+      | orderId | orderStatus | cumulativeQty | symbol |
+      | order_1 | FIL         | 10            | APPL   |
+      | order_2 | PFIL        | 30            | APPL   |
+      | order_3 | FIL         | 40            | APPL   |
+
     And OrderExecuted event expected result like this
       | orderId | orderStatus | lastQty | lastPrice |
       | order_1 | FIL         | 10      | 11        |
       | order_2 | PFIL        | 30      | 11        |
       | order_3 | PFIL        | 10      | 11        |
       | order_3 | FIL         | 30      | 11        |
-
-    And Order entity state as follows
-      | orderId | orderStatus | cumulativeQty | symbol |
-      | order_1 | FIL         | 10            | APPL   |
-      | order_2 | PFIL        | 30            | APPL   |
-      | order_3 | PFIL         | 10            | APPL   |
-      | order_3 | FIL         | 40            | APPL   |
 
   Scenario: OnOrderAccepted_04_failed
 
@@ -128,18 +127,18 @@ Feature: on_order_accepted
     Then following events should be generated
       | OrderExecuted |
 
+    And Order entity state as follows
+      | orderId | orderStatus | cumulativeQty | symbol |
+      | order_1 | FIL         | 10            | APPL   |
+      | order_2 | FIL         | 30            | APPL   |
+      | order_3 | FIL         | 40            | APPL   |
+
     And OrderExecuted event expected result like this
       | orderId | orderStatus | lastQty | lastPrice |
       | order_1 | FIL         | 10      | 11        |
       | order_2 | FIL         | 30      | 11        |
-      | order_3 | PFIL         | 10      | 11        |
+      | order_3 | PFIL        | 10      | 11        |
       | order_3 | FIL         | 30      | 11        |
-
-    And Order entity state as follows
-      | orderId | orderStatus | cumulativeQty |symbol |
-      | order_1 | FIL         | 10            |APPL   |
-      | order_2 | FIL         | 30            |APPL   |
-      | order_3 | FIL         | 40            |APPL   |
 
   Scenario: OnOrderAccepted_05
 
@@ -165,11 +164,11 @@ Feature: on_order_accepted
       | order_2 | PFIL        | 15      | 10        |
 
     And Order entity state as follows
-      | orderId | orderStatus | cumulativeQty |symbol |
-      | order_1 | FIL         | 15            |APPL   |
-      | order_2 | PFIL        | 15            |APPL   |
+      | orderId | orderStatus | cumulativeQty | symbol |
+      | order_1 | FIL         | 15            | APPL   |
+      | order_2 | PFIL        | 15            | APPL   |
 
-  Scenario: OnOrderAccepted_06
+  Scenario: OnOrderAccepted_06_failed
 
   Incoming order matches to resting contra multiple orders
   (incoming buy order pfill, multiple contra orders fill, normal mkt)
@@ -188,15 +187,15 @@ Feature: on_order_accepted
     Then following events should be generated
       | OrderExecuted |
 
+    And Order entity state as follows
+      | orderId | orderStatus | cumulativeQty |
+      | order_1 | FIL         | 10            |
+      | order_2 | FIL         | 5             |
+      | order_3 | PFIL        | 15            |
+
     And OrderExecuted event expected result like this
       | orderId | orderStatus | lastQty | lastPrice |
       | order_1 | FIL         | 10      | 11        |
       | order_2 | FIL         | 5       | 11        |
       | order_3 | PFIL        | 10      | 11        |
       | order_3 | PFIL        | 5       | 11        |
-
-    And Order entity state as follows
-      | orderId | orderStatus | cumulativeQty |
-      | order_1 | FIL         | 10            |
-      | order_2 | FIL         | 5             |
-      | order_3 | PFIL        | 15            |
