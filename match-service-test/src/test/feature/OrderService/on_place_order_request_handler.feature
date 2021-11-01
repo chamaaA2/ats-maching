@@ -422,7 +422,7 @@ Feature: on_place_order_request_handler
 
     When PlaceOrderRequest received with these input parameters
       | symbol | orderQty | side | orderType   | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | AAPL   | 10       | BUY  | PEG_PRIMARY | userId_01 | DAY | 10         | 0          | 0     | 0           |
+      | AAPL   | 10       | BUY  | PEG_PRIMARY | userId_01 | DAY | 0          | 0          | 0     | 0           |
 
     Then following events should be generated
       | OrderAccepted |
@@ -451,7 +451,7 @@ Feature: on_place_order_request_handler
 
     When PlaceOrderRequest received with these input parameters
       | symbol | orderQty | side | orderType   | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | AAPL   | 10       | BUY  | PEG_PRIMARY | userId_01 | DAY | 10         | 0          | 0     | 0           |
+      | AAPL   | 10       | BUY  | PEG_PRIMARY | userId_01 | DAY | 0          | 0          | 0     | 0           |
 
     Then following events should be generated
       | OrderAccepted |
@@ -480,7 +480,7 @@ Feature: on_place_order_request_handler
 
     When PlaceOrderRequest received with these input parameters
       | symbol | orderQty | side | orderType   | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | AAPL   | 10       | BUY  | PEG_PRIMARY | userId_01 | DAY | 10         | 0          | 0     | 0           |
+      | AAPL   | 10       | BUY  | PEG_PRIMARY | userId_01 | DAY | 0          | 0          | 0     | 0           |
 
     Then following events should be generated
       | OrderAccepted |
