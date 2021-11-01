@@ -43,20 +43,20 @@ public class MatchUtils {
     }
 
     private static boolean checkIsTrade(Order aggressor, BookOrder nextOrder, MDQuote quote) {
-        if(aggressor.getOrderType().equals(OrderType.MARKET))
-            return false;
-        return (!isPriceMatch(aggressor, nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), nextOrder.getPrice(), quote));
+        return (!isPriceMatch(aggressor, nextOrder.getPrice()) || !checkWithinNbbo(aggressor, nextOrder.getPrice(), quote));
     }
 
     public static boolean isPriceMatch(Order agg, BigDecimal constValue) {
+        if(agg.getOrderType().equals(OrderType.MARKET))
+            return false;
         if (agg.getSide().equals(OrderSide.SELL))
             return agg.getPrice().compareTo(constValue) <= 0;
         else
             return agg.getPrice().compareTo(constValue) >= 0;
     }
 
-    public static boolean checkWithinNbbo(OrderSide aggSide, BigDecimal constValue, MDQuote quote) {
-        if (aggSide.equals(OrderSide.SELL))
+    public static boolean checkWithinNbbo(Order agg, BigDecimal constValue, MDQuote quote) {
+        if (agg.getSide().equals(OrderSide.SELL))
             return constValue.compareTo(quote.getNbb()) > 0;
         else
             return constValue.compareTo(quote.getNbo()) < 0;
