@@ -538,7 +538,7 @@ Feature: on_place_order_request_handler
 
     When PlaceOrderRequest received with these input parameters
       | symbol | orderQty | side | orderType | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | AAPL   | 10       | BUY  | LIMIT     | userId_01 | IOC | 10         | 0          | 0     | 0           |
+      | AAPL   | 10       | BUY  | LIMIT     | userId_01 | IOC | 10         | 0          | 150   | 0           |
 
     Then following events should be generated
       | OrderAccepted |
@@ -831,7 +831,7 @@ Feature: on_place_order_request_handler
       | AAPL   | 10       | BUY  | LIMIT     | userId_01 | FOK | 10         | 0          | 0     | 0           |
 
     Then following events should be generated
-      | OrderReject |
+      | OrderRejected |
 
     And Order entity state as follows
       | orderId       | symbol | orderStatus |

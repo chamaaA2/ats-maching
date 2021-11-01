@@ -10,10 +10,6 @@ Feature: match_order_on_md_quote_updated
   Background:
     Given testing MatchOrderOnMdQuoteUpdated functionality of MatchingService for root id AAPL
 
-    And Order entity exist as follows
-      | orderId       | symbol | orderQty | side | orderType   | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_PRIMARY | NEW         | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | 2           |
-      | Of-0000000002 | AAPL   | 15       | BUY  | MARKET      | NEW         | 0             | 15        | userId_02 | DAY | 10         | 0          | 0     | 2           |
 
   Scenario: MatchOrderOnMdQuoteUpdatedHandler_01
   Input Command : LIMIT
@@ -44,8 +40,8 @@ Feature: match_order_on_md_quote_updated
       | order_4 | APPL   | 40       | SELL | PEG_MIDPT   | NEW         | 0             | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10    | 0           |
 
     When MDQuoteUpdated received with these input parameters
-      | orderId | symbol | orderQty | side | orderType | orderAcceptedTime                | userId   | tif | displayQty | minimumQty | price | expireDates |
-      | order_2 | APPL   | 40       | SELL | LIMIT     | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 10         | 0          | 10    | 0           |
+      | symbol | nbb | nbo | nbboTime                         |
+      | AAPL   | 10  | 11  | `toEpoch('2021/10/26 09:30:00')` |
 
     Then following events should be generated
       | OrderExecuted |

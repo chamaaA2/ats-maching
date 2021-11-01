@@ -52,8 +52,7 @@ Feature: on_cancel_order_request
 
     And Order entity state as follows
       | orderId       | symbol | orderStatus |
-      | Of-0000000001 | AAPL   | PFILL       |
-
+      | Of-0000000001 | AAPL   | PFILL        |
 
   Scenario: OnCancelRequest_03
   Input command : Cancel Order Request for a Filled Order
@@ -62,7 +61,7 @@ Feature: on_cancel_order_request
 
     And Order entity exist as follows
       | orderId       | symbol | orderQty | side | orderType   | orderStatus | cumulativeQty | orderTime | userId    | tif | displayQty | minimumQty | price | expireDates |
-      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_PRIMARY | PFILL       | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | 1           |
+      | Of-0000000001 | AAPL   | 10       | BUY  | PEG_PRIMARY | FILL        | 0             | 10        | userId_01 | DAY | 10         | 0          | 0     | 1           |
 
     When CancelOrderRequest received with these input parameters
       | symbol | orderId       | comment        |
