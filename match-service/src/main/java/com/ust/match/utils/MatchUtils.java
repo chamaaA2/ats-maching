@@ -7,6 +7,7 @@ import com.ust.groupa.domain.entities.instrument.order.events.OrderCancelled;
 import com.ust.groupa.domain.entities.instrument.order.events.OrderExecuted;
 import com.ust.groupa.domain.enums.OrderSide;
 import com.ust.groupa.domain.enums.OrderStatus;
+import com.ust.groupa.domain.enums.OrderType;
 import com.ust.groupa.domain.enums.TimeInForce;
 import com.ust.groupa.domain.errors.GroupaErrorCodeException;
 import com.ustack.service.core.EvtContext;
@@ -42,14 +43,16 @@ public class MatchUtils {
     }
 
     private static boolean checkIsTrade(Order aggressor, BookOrder nextOrder, MDQuote quote) {
-        return (!isPriceMatch(aggressor.getSide(), nextOrder.getPrice(), aggressor.getPrice()) || !checkWithinNbbo(aggressor.getSide(), nextOrder.getPrice(), quote));
+        if(aggressor.getOrderType().equals(OrderType.MARKET))
+            return false;
+        return (!isPriceMatch(aggressor, nextOrder.getPrice()) || !checkWithinNbbo(aggressor.getSide(), nextOrder.getPrice(), quote));
     }
 
-    public static boolean isPriceMatch(OrderSide aggSide, BigDecimal constValue, BigDecimal aggValue) {
-        if (aggSide.equals(OrderSide.SELL))
-            return aggValue.compareTo(constValue) <= 0;
+    public static boolean isPriceMatch(Order agg, BigDecimal constValue) {
+        if (agg.getSide().equals(OrderSide.SELL))
+            return agg.getPrice().compareTo(constValue) <= 0;
         else
-            return aggValue.compareTo(constValue) >= 0;
+            return agg.getPrice().compareTo(constValue) >= 0;
     }
 
     public static boolean checkWithinNbbo(OrderSide aggSide, BigDecimal constValue, MDQuote quote) {
