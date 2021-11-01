@@ -9,8 +9,10 @@ import com.ustack.service.core.EntityQueryHandler;
 import com.ustack.service.core.QueryContext;
 import com.ustack.service.core.response.GenericResponse;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +21,10 @@ public class GetMatchingOrderBookHandler extends EntityQueryHandler<Instrument, 
 
     @Override
     public Publisher<GenericResponse> execute(QueryContext<Instrument> queryContext, GetMatchingOrderBook getMatchingOrderBook) {
+        return Flux.interval(Duration.ofSeconds(1)).map(val -> GenericResponse.success(getOrderBook(queryContext)));
+    }
+
+    public List<Order> getOrderBook(QueryContext<Instrument> queryContext) {
         List<Order> sellList = queryContext.getActiveEntitySet(Order.class).stream()
                 .filter(order -> order.getSide().equals(OrderSide.SELL))
                 .sorted(Comparator.comparing(this::checkOrderTypeSort).thenComparing(this::checkSideAndPriceSort))
@@ -28,9 +34,8 @@ public class GetMatchingOrderBookHandler extends EntityQueryHandler<Instrument, 
                 .sorted(Comparator.comparing(this::checkOrderTypeSort).thenComparing(this::checkSideAndPriceSort))
                 .collect(Collectors.toList());
         sellList.addAll(buyList);
-        return GenericResponse.success(sellList).toMono();
+        return sellList;
     }
-
 
     public BigDecimal checkSideAndPriceSort(Order o) {
         if (o.getSide().equals(OrderSide.SELL))
