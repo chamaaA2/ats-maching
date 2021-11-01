@@ -42,7 +42,7 @@ public class MatchUtils {
             return sellTop.getOrder();
     }
 
-    private static boolean checkIsTrade(Order aggressor, BookOrder nextOrder, MDQuote quote) {
+    private static boolean checkIsNotTrade(Order aggressor, BookOrder nextOrder, MDQuote quote) {
         return (!isPriceMatch(aggressor, nextOrder.getPrice()) || !checkWithinNbbo(aggressor, nextOrder.getPrice(), quote));
     }
 
@@ -99,7 +99,7 @@ public class MatchUtils {
                 cumQty = nextOrder.getQty();
                 if (aggressor.getTif().equals(TimeInForce.FOK) || aggressor.getMinimumQty() > nextOrder.getQty())
                     break;
-                if (checkIsTrade(aggressor, nextOrder, quote))
+                if (checkIsNotTrade(aggressor, nextOrder, quote))
                     break;
                 OrderStatus status = updatedConstOrderRemQty > cumQty ? OrderStatus.PFIL : OrderStatus.FIL;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
@@ -108,7 +108,7 @@ public class MatchUtils {
                         , aggressor.getOrderQty(), cumQty, lastPrice, OrderStatus.PFIL));
             } else if (aggRemQty == nextOrder.getQty()) {
                 cumQty = nextOrder.getQty();
-                if (checkIsTrade(aggressor, nextOrder, quote))
+                if (checkIsNotTrade(aggressor, nextOrder, quote))
                     break;
                 OrderStatus status = updatedConstOrderRemQty > cumQty ? OrderStatus.PFIL : OrderStatus.FIL;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
@@ -119,7 +119,7 @@ public class MatchUtils {
                 isCompleted = true;
             } else {
                 cumQty = aggRemQty;
-                if (checkIsTrade(aggressor, nextOrder, quote))
+                if (checkIsNotTrade(aggressor, nextOrder, quote))
                     break;
                 OrderStatus status = updatedConstOrderRemQty > cumQty ? OrderStatus.PFIL : OrderStatus.FIL;
                 context.applyEvent(Order.class, nextOrder.getOrder().getOrderId(), new OrderExecuted(nextOrder.getOrder().getOrderId()
