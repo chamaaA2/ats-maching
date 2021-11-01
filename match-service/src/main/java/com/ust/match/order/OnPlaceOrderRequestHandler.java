@@ -43,6 +43,8 @@ public class OnPlaceOrderRequestHandler extends EntityCommandHandler<Instrument,
                     error = "Order type PEG, tif DAY orders haven't expireDates value";
                 else if (cmd.getPrice().compareTo(BigDecimal.ZERO) > 0)
                     error = "Order type PEG Orders haven't initial set price";
+                else if (cmd.getDisplayQty() != cmd.getOrderQty())
+                    error = "Order type PEG Orders must be displayed.";
                 break;
             }
             case LIMIT: {
