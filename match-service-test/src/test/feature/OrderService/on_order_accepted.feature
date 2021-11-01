@@ -199,3 +199,23 @@ Feature: on_order_accepted
       | order_2 | FIL         | 5       | 11        |
       | order_3 | PFIL        | 10      | 11        |
       | order_3 | PFIL        | 5       | 11        |
+
+  Scenario: OnOrderAccepted_07_failed
+
+  Incoming order rests since match is not within NBBO
+
+    Given Order entity exist as follows
+      | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_1 | APPL   | 40       | BUY  | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:30:00')` | userId_1 | DAY | 40         | 0          | 13    | 0           |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | NEW         | 0             | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 40         | 0          | 10    | 0           |
+
+    When OrderAccepted received with these input parameters
+      | orderId | symbol | orderQty | side | orderType | orderAcceptedTime                | userId   | tif | displayQty | minimumQty | price | expireDates |
+      | order_2 | APPL   | 40       | SELL | LIMIT     | `toEpoch('2021/10/18 09:31:00')` | userId_2 | DAY | 40         | 0          | 10    | 0           |
+
+    Then no events should be generated
+
+    And  Order entity state as follows
+      | orderId | orderStatus | cumulativeQty | symbol |
+      | order_1 | NEW         | 0             | APPL   |
+      | order_2 | NEW         | 0             | APPL   |
