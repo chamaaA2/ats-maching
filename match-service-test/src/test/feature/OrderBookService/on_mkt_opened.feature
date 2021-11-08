@@ -8,22 +8,22 @@ Feature: on_mkt_opened
   functionality: OrderBook creation on MktOpenRequest
 
   Background:
-    Given testing OnMktOpened functionality of MatchingService for root id AAPL
+    Given testing OnMktOpened functionality of MatchingService for root id APPL
 
     And Instrument entity exist as follows
       | symbol | symbolHalted |
-      | AAPL   | false        |
+      | APPL   | false        |
 
 
   Scenario: on_mkt_opened_01
 
     Given OrderBook entity exist as follows
       | symbol | isMarketOpen |
-      | AAPL   | true         |
+      | APPL   | true         |
 
     And MDQuote entity exist as follows
       | symbol | nbb | nbo | nbboTime                         |
-      | AAPL   | 10  | 11  | `toEpoch('2021/10/18 09:25:00')` |
+      | APPL   | 10  | 11  | `toEpoch('2021/10/18 09:25:00')` |
 
     And Order entity exist as follows
       | orderId | symbol | orderQty | side | orderType | orderStatus | cumulativeQty | orderTime                        | userId   | tif | displayQty | minimumQty | price | expireDates |
@@ -32,7 +32,7 @@ Feature: on_mkt_opened
 
     And MktOpened received with these input parameters
       | symbol | date       | time                             |
-      | AAPL   | 2021/10/18 | `toEpoch('2021/10/18 09:29:00')` |
+      | APPL   | 2021/10/18 | `toEpoch('2021/10/18 09:29:00')` |
 
     Then following events should be generated
       | OrderExecuted |
